@@ -1,0 +1,124 @@
+{
+	"name": "vscode-deepl",
+	"displayName": "DeepL for Visual Studio Code",
+	"description": "Use DeepL translator inside your favourite code editor",
+	"version": "1.0.0",
+	"keywords": [
+		"DeepL",
+		"Translate",
+		"Translator",
+		"Languages",
+		"Maschine Translation"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/soerenuhrbach/vscode-deepl.git"
+	},
+	"preview": true,
+	"license": "MIT",
+	"author": {
+		"name": "Sören Uhrbach",
+		"email": "mail@soerenuhrbach.de"
+	},
+	"publisher": "soerenuhrbach",
+	"engines": {
+		"vscode": "^1.58.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onStartupFinished",
+		"onCommand:deepl.translate",
+		"onCommand:deepl.translateTo",
+		"onCommand:deepl.translateFromTo"
+	],
+	"main": "./dist/extension.js",
+	"contributes": {
+		"configuration": [
+			{
+				"title": "DeepL",
+				"properties": {
+					"deepl.apiKey": {
+						"type": "string",
+						"default": "",
+						"markdownDescription": "The key is used to authenticate with the DeepL API. [See offical documentation](https://www.deepl.com/docs-api/accessing-the-api/authentication/)"
+					},
+					"deepl.usePro": {
+						"type": "boolean",
+						"default": false,
+						"description": "Whether to use the DeepL Pro API"
+					}
+				}
+			}
+		],
+		"commands": [
+			{
+				"command": "deepl.translate",
+				"title": "DeepL: Translate",
+				"shortTitle": "Translate"
+			},
+			{
+				"command": "deepl.translateTo",
+				"title": "DeepL: Translate to ...",
+				"shortTitle": "Translate to ..."
+			},
+			{
+				"command": "deepl.translateFromTo",
+				"title": "DeepL: Translate from ... to ...",
+				"shortTitle": "Translate from ..."
+			}
+		],
+		"menus": {
+			"editor/context": [
+				{
+					"when": "editorHasSelection && !isInDiffEditor",
+					"command": "deepl.translate",
+					"group": "deepl@100"
+				},
+				{
+					"when": "editorHasSelection && !isInDiffEditor",
+					"command": "deepl.translateTo",
+					"group": "deepl@101"
+				},
+				{
+					"when": "editorHasSelection && !isInDiffEditor",
+					"command": "deepl.translateFromTo",
+					"group": "deepl@102"
+				}
+			]
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "yarn run package",
+		"compile": "webpack",
+		"watch": "webpack --watch",
+		"package": "webpack --mode production --devtool hidden-source-map",
+		"pretest": "yarn run lint",
+		"lint": "eslint src --ext ts",
+		"test": "mocha -r ts-node/register test/*.test.ts"
+	},
+	"devDependencies": {
+		"@types/glob": "^7.1.3",
+		"@types/mocha": "^8.2.2",
+		"@types/node": "14.x",
+		"@types/vscode": "^1.58.0",
+		"@typescript-eslint/eslint-plugin": "^4.26.0",
+		"@typescript-eslint/parser": "^4.26.0",
+		"chai": "^4.3.4",
+		"eslint": "^7.27.0",
+		"glob": "^7.1.7",
+		"mocha": "^8.4.0",
+		"ts-loader": "^9.2.2",
+		"ts-node": "^10.1.0",
+		"typescript": "^4.3.2",
+		"vscode-test": "^1.5.2",
+		"webpack": "^5.38.1",
+		"webpack-cli": "^4.7.0"
+	},
+	"dependencies": {
+		"axios": "^0.21.1",
+		"vue": "^3.1.5",
+		"xstate": "^4.23.0"
+	}
+}
