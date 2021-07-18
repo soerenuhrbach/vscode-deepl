@@ -1,28 +1,28 @@
 # vscode-deepl
 
-Translate texts directly inside vscode powered by [DeepL](https://www.deepl.com/translator). 
-This extension provides all the necessary integrations to easily translate texts into all languages.
+Translate texts directly inside vscode powered by [DeepL](https://www.deepl.com/translator).  
+This extension provides all the necessary integrations to easily translate texts into all languages without leaving your code editor.
 
 ## Features
 
 The extension provides the following functionalities:
 
-* Translates selected texts and directly replaces them
+* Translates selected texts and replaces them directly
 * Automatically recognises the source language
 
 The following commands are available to translate texts:
 
-|Command|Description
-|---|---
-|DeepL: Translate|Translates the selected text to the last used language
-|DeepL: Translate to ...|Asks for the target language and translates the selected text into the target language
-|DeepL: Translate from ... to ...|Asks for source and target language and translates the selected text from the source language into the target language
+|Command|Keybinding|Description
+|---|---|---
+|DeepL: Translate|alt+t|Translates the selected text into the last used target language 
+|DeepL: Translate to ...|alt+shift+t|Asks for the target language and translates the selected text into the target language
+|DeepL: Translate from ... to ...|alt+ctrl+shift+t|Asks for source and target language and translates the selected text from the source language into the target language
 
 The commands are accessible via the command pallette.
 
 ![Commands](doc/command-pallette.png)
 
-In addition, the context menu is extended and now includes the translation commands
+In addition, the context menu is extended and now includes the translation commands.
 
 ![Menu](doc/menu.png)
 
