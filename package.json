@@ -14,7 +14,7 @@
 		"type": "git",
 		"url": "https://github.com/soerenuhrbach/vscode-deepl.git"
 	},
-	"preview": true,
+	"preview": false,
 	"license": "MIT",
 	"author": {
 		"name": "Sören Uhrbach",
@@ -87,7 +87,25 @@
 					"group": "deepl@102"
 				}
 			]
-		}
+		},
+		"keybindings": [
+			{
+				"command": "deepl.translate",
+				"when": "editorHasSelection && !isInDiffEditor",
+				"key": "alt+t"
+			},
+			{
+				"command": "deepl.translateTo",
+				"when": "editorHasSelection && !isInDiffEditor",
+				"key": "shift+alt+t"
+			},
+			{
+				"command": "deepl.translateFromTo",
+				"when": "editorHasSelection && !isInDiffEditor",
+				"key": "ctrl+shift+alt+t",
+				"mac": "cmd+shift+alt+t"
+			}
+		]
 	},
 	"scripts": {
 		"vscode:prepublish": "yarn run package",
