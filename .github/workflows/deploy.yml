@@ -20,3 +20,10 @@ jobs:
           registryUrl: https://marketplace.visualstudio.com
           yarn: true
           dryRun: ${{ env.DRY_RUN == 'True' }}
+      - name: Publish to Open VSX Registry
+        uses: HaaLeo/publish-vscode-extension@v0
+        with:
+          pat: ${{ secrets.OPEN_VSX_MARKETPLACE_ACCESS_TOKEN }}
+          yarn: true
+          dryRun: ${{ env.DRY_RUN == 'True' }}
+          registryUrl: https://open-vsx.org
