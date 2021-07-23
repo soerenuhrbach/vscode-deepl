@@ -1,8 +1,8 @@
 {
 	"name": "vscode-deepl",
 	"displayName": "DeepL for Visual Studio Code",
-	"description": "Use DeepL translator inside your favourite code editor",
-	"version": "1.0.0",
+	"description": "Easily translate into more than 25 languages directly from your favourite editor using DeepL.",
+	"version": "1.0.1",
 	"keywords": [
 		"DeepL",
 		"Translate",
@@ -33,6 +33,11 @@
 		"onCommand:deepl.translateTo",
 		"onCommand:deepl.translateFromTo"
 	],
+	"icon": "resources/logo@2.png",
+	"galleryBanner": {
+		"color": "#042b48",
+		"theme": "light"
+	},
 	"main": "./dist/extension.js",
 	"contributes": {
 		"configuration": [
@@ -74,17 +79,17 @@
 				{
 					"when": "editorHasSelection && !isInDiffEditor",
 					"command": "deepl.translate",
-					"group": "deepl@100"
+					"group": "deepl@1"
 				},
 				{
 					"when": "editorHasSelection && !isInDiffEditor",
 					"command": "deepl.translateTo",
-					"group": "deepl@101"
+					"group": "deepl@2"
 				},
 				{
 					"when": "editorHasSelection && !isInDiffEditor",
 					"command": "deepl.translateFromTo",
-					"group": "deepl@102"
+					"group": "deepl@3"
 				}
 			]
 		},
