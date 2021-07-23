@@ -20,4 +20,3 @@ export interface ExtensionState {
     target: Language[]
   }
 };
-
