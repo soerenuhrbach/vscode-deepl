@@ -21,7 +21,7 @@ export class DeepLException extends Error {
     this.code = code;
   }
 
-  public static createFromStatusCode(code: number) {
+  public static createFromStatusCodeAndMessage(code: number, message: string) {
     var exception = new DeepLException(code);
     exception.name = DeepLException.name;
     switch (code) {
@@ -43,7 +43,7 @@ export class DeepLException extends Error {
         break;
       
       default:
-        exception.message = "Unfortunately, the DeepL API cannot accept any requests at the moment. Please try again later."
+        exception.message = "Unfortunately, the DeepL API cannot accept any requests at the moment. Please try again later. (" + message + ")";
         break;
     }
     return exception;
@@ -64,6 +64,8 @@ http.interceptors.request.use((config) => {
     config.params = {};
   }
   config.params.auth_key = state.apiKey;
+  config.params.formality = state.formality;
+  config.params.split_sentences = state.splitSentences;
   return config;
 });
 
@@ -74,7 +76,7 @@ http.interceptors.response.use(
       throw e;
     }
 
-    const exception = DeepLException.createFromStatusCode(e.response.status);
+    const exception = DeepLException.createFromStatusCodeAndMessage(e.response.status, e.response.data.message);
     for (const handler of errorHandlers) {
       handler(exception);
     }

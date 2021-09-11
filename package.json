@@ -53,6 +53,18 @@
 						"type": "boolean",
 						"default": false,
 						"description": "Whether to use the DeepL Pro API"
+					},
+					"deepl.formality": {
+						"type": "string",
+						"default": "default",
+						"enum": ["default", "less", "more"],
+						"markdownDescription": "Whether the translated text should lean towards formal or informal language in certain languages. [See offical documentation](https://www.deepl.com/docs-api/translating-text/request/)"
+					},
+					"deepl.splitSentences": {
+						"type": "string",
+						"default": "1",
+						"enum": ["0", "1", "nonewlines"],
+						"markdownDescription": "Sets whether the translation engine should first split the input into sentences. [See offical documentation](https://www.deepl.com/docs-api/translating-text/request/)"
 					}
 				}
 			}

@@ -43,6 +43,8 @@ This extension contributes the following settings:
 
 * `deepl.apiKey`: The key is used to authenticate with the DeepL API. [See offical documentation](https://www.deepl.com/docs-api/accessing-the-api/authentication/)
 * `deepl.usePro`: Whether to use the DeepL Pro API - check this option if you use the paid plan.
+* `deepl.formality`: Whether the translated text should lean towards formal or informal language in certain languages.
+* `deepl.splitSentences`: Sets whether the translation engine should first split the input into sentences.
 
 For this extension to work, the above settings must be made.
 
