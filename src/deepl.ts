@@ -64,6 +64,8 @@ http.interceptors.request.use((config) => {
     config.params = {};
   }
   config.params.auth_key = state.apiKey;
+  config.params.formality = state.formality;
+  config.params.split_sentences = state.splitSentences;
   return config;
 });
 
