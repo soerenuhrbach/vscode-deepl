@@ -2,7 +2,7 @@
 	"name": "vscode-deepl",
 	"displayName": "DeepL for Visual Studio Code",
 	"description": "Easily translate into more than 25 languages directly from your favourite editor using DeepL.",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"keywords": [
 		"DeepL",
 		"Translate",
