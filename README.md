@@ -1,13 +1,13 @@
 # vscode-deepl
 
-Translate texts directly inside vscode powered by [DeepL](https://www.deepl.com/translator).  
-This extension provides all the necessary integrations to easily translate texts into all languages without leaving your code editor.
+Translate texts in more than 25 languages directly in your favourite code editor powered by [DeepL](https://www.deepl.com/translator).
+This extension provides all the necessary integrations to easily translate texts without leaving your code editor.
 
 ## Features
 
 The extension provides the following functionalities:
 
-* Translates selected texts and replaces them directly
+* Translate selected text in more than 25 languages and replaces them directly
 * Automatically recognises the source language
 
 The following commands are available to translate texts:
@@ -43,6 +43,8 @@ This extension contributes the following settings:
 
 * `deepl.apiKey`: The key is used to authenticate with the DeepL API. [See offical documentation](https://www.deepl.com/docs-api/accessing-the-api/authentication/)
 * `deepl.usePro`: Whether to use the DeepL Pro API - check this option if you use the paid plan.
+* `deepl.formality`: Whether the translated text should lean towards formal or informal language in certain languages.
+* `deepl.splitSentences`: Sets whether the translation engine should first split the input into sentences.
 
 For this extension to work, the above settings must be made.
 
@@ -57,6 +59,10 @@ The texts are translated via the online service of [DeepL](https://www.deepl.com
 Dont use this extension if you dont agree with their privacy policy!
 
 ## Release Notes
+
+### 1.0.1
+
+Added extension logo
 
 ### 1.0.0
 

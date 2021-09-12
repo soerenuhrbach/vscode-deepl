@@ -1,8 +1,8 @@
 {
 	"name": "vscode-deepl",
 	"displayName": "DeepL for Visual Studio Code",
-	"description": "Use DeepL translator inside your favourite code editor",
-	"version": "1.0.0",
+	"description": "Easily translate into more than 25 languages directly from your favourite editor using DeepL.",
+	"version": "1.0.1",
 	"keywords": [
 		"DeepL",
 		"Translate",
@@ -33,6 +33,11 @@
 		"onCommand:deepl.translateTo",
 		"onCommand:deepl.translateFromTo"
 	],
+	"icon": "resources/logo@2.png",
+	"galleryBanner": {
+		"color": "#042b48",
+		"theme": "light"
+	},
 	"main": "./dist/extension.js",
 	"contributes": {
 		"configuration": [
@@ -48,6 +53,18 @@
 						"type": "boolean",
 						"default": false,
 						"description": "Whether to use the DeepL Pro API"
+					},
+					"deepl.formality": {
+						"type": "string",
+						"default": "default",
+						"enum": ["default", "less", "more"],
+						"markdownDescription": "Whether the translated text should lean towards formal or informal language in certain languages. [See offical documentation](https://www.deepl.com/docs-api/translating-text/request/)"
+					},
+					"deepl.splitSentences": {
+						"type": "string",
+						"default": "1",
+						"enum": ["0", "1", "nonewlines"],
+						"markdownDescription": "Sets whether the translation engine should first split the input into sentences. [See offical documentation](https://www.deepl.com/docs-api/translating-text/request/)"
 					}
 				}
 			}
@@ -74,17 +91,17 @@
 				{
 					"when": "editorHasSelection && !isInDiffEditor",
 					"command": "deepl.translate",
-					"group": "deepl@100"
+					"group": "deepl@1"
 				},
 				{
 					"when": "editorHasSelection && !isInDiffEditor",
 					"command": "deepl.translateTo",
-					"group": "deepl@101"
+					"group": "deepl@2"
 				},
 				{
 					"when": "editorHasSelection && !isInDiffEditor",
 					"command": "deepl.translateFromTo",
-					"group": "deepl@102"
+					"group": "deepl@3"
 				}
 			]
 		},
@@ -135,7 +152,7 @@
 		"webpack-cli": "^4.7.0"
 	},
 	"dependencies": {
-		"axios": "^0.21.1",
+		"axios": "^0.21.2",
 		"vue": "^3.1.5",
 		"xstate": "^4.23.0"
 	}

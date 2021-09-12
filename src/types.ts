@@ -15,9 +15,10 @@ export interface ExtensionState {
   targetLanguage: string | null,
   apiKey: string | null,
   usePro: boolean,
+  formality: string,
+  splitSentences: string,
   languages: {
     source: Language[],
     target: Language[]
   }
 };
-
