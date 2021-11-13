@@ -43,10 +43,18 @@ This extension contributes the following settings:
 
 * `deepl.apiKey`: The key is used to authenticate with the DeepL API. [See offical documentation](https://www.deepl.com/docs-api/accessing-the-api/authentication/)
 * `deepl.usePro`: Whether to use the DeepL Pro API - check this option if you use the paid plan.
-* `deepl.formality`: Whether the translated text should lean towards formal or informal language in certain languages.
-* `deepl.splitSentences`: Sets whether the translation engine should first split the input into sentences.
 
 For this extension to work, the above settings must be made.
+
+Optional settings:
+
+* `deepl.formality`: Whether the translated text should lean towards formal or informal language in certain languages.
+* `deepl.splitSentences`: Sets whether the translation engine should first split the input into sentences.
+* `deepl.preserveFormatting`: Sets whether the translation engine should respect the original formatting, even if it would usually correct some aspects.
+* `deepl.tagHandling`: Sets which kind of tags should be handled. Options currently available: 'xml'.
+* `deepl.splittingTags`: Comma-separated list of XML tags which always cause splits.
+* `deepl.nonSplittingTags`: Comma-separated list of XML tags which never split sentences. 
+* `deepl.ignoreTags`: Comma-separated list of XML tags that indicate text not to be translated.
 
 ## Disclaimer
 
@@ -59,6 +67,10 @@ The texts are translated via the online service of [DeepL](https://www.deepl.com
 Dont use this extension if you dont agree with their privacy policy!
 
 ## Release Notes
+
+### 1.0.3
+
+Added more settings to use more deepl api parameters
 
 ### 1.0.2
 
