@@ -65,6 +65,32 @@
 						"default": "1",
 						"enum": ["0", "1", "nonewlines"],
 						"markdownDescription": "Sets whether the translation engine should first split the input into sentences. [See offical documentation](https://www.deepl.com/docs-api/translating-text/request/)"
+					},
+					"deepl.preserveFormatting": {
+						"type": "boolean",
+						"default": false,
+						"markdownDescription": "Sets whether the translation engine should respect the original formatting, even if it would usually correct some aspects. [See offical documentation](https://www.deepl.com/docs-api/translating-text/request/)"
+					},
+					"deepl.tagHandling": {
+						"type": "string",
+						"default": "off",
+						"enum": ["off", "xml"],
+						"markdownDescription": "Sets which kind of tags should be handled. Options currently available: 'xml'. [See offical documentation](https://www.deepl.com/de/docs-api/handling-xml/)"
+					},
+					"deepl.splittingTags": {
+						"type": "string",
+						"default": "",
+						"markdownDescription": "Comma-separated list of XML tags which always cause splits. (Requires deepl.tagHandling to be enabled) [See offical documentation](https://www.deepl.com/de/docs-api/handling-xml/)"
+					},
+					"deepl.nonSplittingTags": {
+						"type": "string",
+						"default": "",
+						"markdownDescription": "Comma-separated list of XML tags which never split sentences. (Requires deepl.tagHandling to be enabled) [See offical documentation](https://www.deepl.com/de/docs-api/handling-xml/)"
+					},
+					"deepl.ignoreTags": {
+						"type": "string",
+						"default": "",
+						"markdownDescription": "Comma-separated list of XML tags that indicate text not to be translated. (Requires deepl.tagHandling to be enabled) [See offical documentation](https://www.deepl.com/de/docs-api/handling-xml/)"
 					}
 				}
 			}

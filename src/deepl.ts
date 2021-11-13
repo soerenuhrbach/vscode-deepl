@@ -63,9 +63,19 @@ http.interceptors.request.use((config) => {
   if (!config.params) {
     config.params = {};
   }
+
   config.params.auth_key = state.apiKey;
   config.params.formality = state.formality;
   config.params.split_sentences = state.splitSentences;
+  config.params.preserve_formatting = state.preserveFormatting ? "1" : "0";
+  
+  if (state.tagHandling !== 'off') {
+    config.params.tag_handling = state.tagHandling;
+    config.params.ignore_tags = state.ignoreTags;
+    config.params.splitting_tags = state.splittingTags;
+    config.params.non_splitting_tags = state.nonSplittingTags;
+  }
+
   return config;
 });
 
