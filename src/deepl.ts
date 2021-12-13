@@ -4,12 +4,16 @@ import { Language, LanguageType, Translation } from './types';
 
 /* eslint-disable */
 export enum DeepLErrorCodes {
+  BAD_REQUEST = 400,
   AUTHORIZATION_FAILED = 403,
+  NOT_FOUND = 404,
   REQUEST_SIZE_EXCEEDED = 413,
-  CHARACTER_LIMIT_REACHED = 456,
+  URL_TOO_LONG = 414,
   TOO_MANY_REQUEST_4XX = 429,
-  TOO_MANY_REQUEST_5XX = 529,
+  CHARACTER_LIMIT_REACHED = 456,
   INTERNAL_SERVER_ERROR = 500,
+  RESOURCE_UNAVAILABLE = 503,
+  TOO_MANY_REQUEST_5XX = 529,
 }
 /* eslint-enable */
 
@@ -64,7 +68,8 @@ http.interceptors.request.use((config) => {
     config.params = {};
   }
 
-  config.params.auth_key = state.apiKey;
+  config.headers.Authorization = `DeepL-Auth-Key ${state.apiKey}`;
+
   config.params.formality = state.formality;
   config.params.split_sentences = state.splitSentences;
   config.params.preserve_formatting = state.preserveFormatting ? "1" : "0";
