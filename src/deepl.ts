@@ -69,7 +69,7 @@ http.interceptors.request.use((config) => {
   config.params.auth_key = state.apiKey;
 
   if("target_lang" in config.params) {
-    if(formalityAllowed.indexOf(config.params.target_lang) > -1) {
+    if(formalityAllowed.indexOf(state.formality) > -1) {
       config.params.formality = state.formality;
     }
   }
