@@ -55,6 +55,8 @@ type ErrorHandler = (e: DeepLException) => void;
 const http = axios.create();
 const errorHandlers: ErrorHandler[] = [];
 
+const formalityAllowed: string[] = ["DE", "FR", "IT", "ES", "NL", "PL", "PT-PT", "PT-BR", "RU"];
+
 http.interceptors.request.use((config) => {
   config.baseURL = state.usePro
     ? 'https://api.deepl.com'
@@ -65,7 +67,13 @@ http.interceptors.request.use((config) => {
   }
 
   config.params.auth_key = state.apiKey;
-  config.params.formality = state.formality;
+
+  if("target_lang" in config.params) {
+    if(formalityAllowed.indexOf(state.formality) > -1) {
+      config.params.formality = state.formality;
+    }
+  }
+
   config.params.split_sentences = state.splitSentences;
   config.params.preserve_formatting = state.preserveFormatting ? "1" : "0";
   
