@@ -75,7 +75,7 @@ http.interceptors.request.use((config) => {
   config.params.split_sentences = state.splitSentences;
   config.params.preserve_formatting = state.preserveFormatting ? "1" : "0";
   
-  if("target_lang" in config.params && formalityAllowed.includes(state.formality)) {
+  if ("target_lang" in config.params && formalityAllowed.includes(state.config.target_lang.toUpperCase())) {
     config.params.formality = state.formality;
   }
   
