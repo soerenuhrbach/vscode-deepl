@@ -68,6 +68,11 @@ Dont use this extension if you dont agree with their privacy policy!
 
 ## Release Notes
 
+### 1.0.4
+
+- Header authentication is now used instead of parameter authentication
+- Formality parameter is only applied for supported languages
+
 ### 1.0.3
 
 Added more settings to use more deepl api parameters

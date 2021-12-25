@@ -4,6 +4,10 @@ All notable changes to the "vscode-deepl" extension will be documented in this f
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+### 1.0.4
+
+- Header authentication is now used instead of parameter authentication
+- Formality parameter is only applied for supported languages
 
 ## 1.0.3
 
