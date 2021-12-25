@@ -57,13 +57,21 @@
 					"deepl.formality": {
 						"type": "string",
 						"default": "default",
-						"enum": ["default", "less", "more"],
+						"enum": [
+							"default",
+							"less",
+							"more"
+						],
 						"markdownDescription": "Whether the translated text should lean towards formal or informal language in certain languages. [See offical documentation](https://www.deepl.com/docs-api/translating-text/request/)"
 					},
 					"deepl.splitSentences": {
 						"type": "string",
 						"default": "1",
-						"enum": ["0", "1", "nonewlines"],
+						"enum": [
+							"0",
+							"1",
+							"nonewlines"
+						],
 						"markdownDescription": "Sets whether the translation engine should first split the input into sentences. [See offical documentation](https://www.deepl.com/docs-api/translating-text/request/)"
 					},
 					"deepl.preserveFormatting": {
@@ -74,7 +82,10 @@
 					"deepl.tagHandling": {
 						"type": "string",
 						"default": "off",
-						"enum": ["off", "xml"],
+						"enum": [
+							"off",
+							"xml"
+						],
 						"markdownDescription": "Sets which kind of tags should be handled. Options currently available: 'xml'. [See offical documentation](https://www.deepl.com/de/docs-api/handling-xml/)"
 					},
 					"deepl.splittingTags": {
@@ -157,23 +168,18 @@
 		"package": "webpack --mode production --devtool hidden-source-map",
 		"pretest": "yarn run lint",
 		"lint": "eslint src --ext ts",
-		"test": "mocha -r ts-node/register test/*.test.ts"
 	},
 	"devDependencies": {
 		"@types/glob": "^7.1.3",
-		"@types/mocha": "^8.2.2",
 		"@types/node": "14.x",
 		"@types/vscode": "^1.58.0",
 		"@typescript-eslint/eslint-plugin": "^4.26.0",
 		"@typescript-eslint/parser": "^4.26.0",
-		"chai": "^4.3.4",
 		"eslint": "^7.27.0",
 		"glob": "^7.1.7",
-		"mocha": "^8.4.0",
 		"ts-loader": "^9.2.2",
 		"ts-node": "^10.1.0",
 		"typescript": "^4.3.2",
-		"vscode-test": "^1.5.2",
 		"webpack": "^5.38.1",
 		"webpack-cli": "^4.7.0"
 	},
