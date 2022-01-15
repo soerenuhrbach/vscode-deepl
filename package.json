@@ -31,7 +31,8 @@
 		"onStartupFinished",
 		"onCommand:deepl.translate",
 		"onCommand:deepl.translateTo",
-		"onCommand:deepl.translateFromTo"
+		"onCommand:deepl.translateFromTo",
+		"onCommand:deepl.translateBelow"
 	],
 	"icon": "resources/logo@2.png",
 	"galleryBanner": {
@@ -121,6 +122,11 @@
 				"command": "deepl.translateFromTo",
 				"title": "DeepL: Translate from ... to ...",
 				"shortTitle": "Translate from ..."
+			},
+			{
+				"command": "deepl.translateBelow",
+				"title": "DeepL: Translate from ... to ... below the original text",
+				"shortTitle": "Translate below the original ..."
 			}
 		],
 		"menus": {
@@ -138,6 +144,11 @@
 				{
 					"when": "editorHasSelection && !isInDiffEditor",
 					"command": "deepl.translateFromTo",
+					"group": "deepl@3"
+				},
+				{
+					"when": "editorHasSelection && !isInDiffEditor",
+					"command": "deepl.translateBelow",
 					"group": "deepl@3"
 				}
 			]
@@ -158,6 +169,12 @@
 				"when": "editorHasSelection && !isInDiffEditor",
 				"key": "ctrl+shift+alt+t",
 				"mac": "cmd+shift+alt+t"
+			},
+			{
+				"command": "deepl.translateBelow",
+				"when": "editorHasSelection && !isInDiffEditor",
+				"key": "ctrl+alt+t",
+				"mac": "cmd+alt+t"
 			}
 		]
 	},

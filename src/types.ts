@@ -27,3 +27,15 @@ export interface ExtensionState {
     target: Language[]
   }
 };
+
+export interface TranslateCommandParam {
+  askForTargetLang: boolean
+  askForSourceLang: boolean
+  below: boolean
+}
+
+export interface TranslateParam {
+  targetLang: string
+  sourceLang?: string
+  below: boolean
+}
