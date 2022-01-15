@@ -3,7 +3,18 @@ import * as vscode from 'vscode';
 import { state } from './state';
 import { showApiKeyInput, showSourceLanguageInput, showTargetLanguageInput, showUseProInput } from "./inputs";
 
-function translateSelections(selections: vscode.Selection[], targetLang: string, sourceLang?: string): Thenable<void> {
+interface TranslateCommandParam {
+  askForTargetLang: boolean
+  askForSourceLang: boolean
+}
+
+interface TranslateParam {
+  targetLang: string
+  sourceLang?: string
+}
+
+function translateSelections(selections: vscode.Selection[], translateParam: TranslateParam): Thenable<void> {
+  const { targetLang, sourceLang } = translateParam;
   return vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'Translating' }, async (progress) => {
     const increment = 100 / 2 / selections.length;
 
@@ -36,7 +47,8 @@ function translateSelections(selections: vscode.Selection[], targetLang: string,
   });
 };
 
-function createTranslateCommand(askForTargetLang: boolean = false, askForSourceLang: boolean = false) {
+function createTranslateCommand(param: TranslateCommandParam) {
+  const { askForTargetLang, askForSourceLang } = param;
   return async function() {
     if (!state.apiKey) {
       await configureSettings();
@@ -57,13 +69,18 @@ function createTranslateCommand(askForTargetLang: boolean = false, askForSourceL
       return;
     }
 
-    translateSelections(selections, state.targetLanguage, sourceLang ?? undefined);
+    const translateParam: TranslateParam = {
+      targetLang: state.targetLanguage,
+      sourceLang: sourceLang ?? undefined,
+    };
+    translateSelections(selections, translateParam);
   };
 }
 
-export const translate = createTranslateCommand();
-export const translateTo = createTranslateCommand(true);
-export const translateFromTo = createTranslateCommand(true, true);
+export const translate = createTranslateCommand({askForTargetLang: false, askForSourceLang: false});
+export const translateTo = createTranslateCommand({askForTargetLang: true, askForSourceLang: false});
+export const translateFromTo = createTranslateCommand({askForTargetLang: true, askForSourceLang: true});
+export const translateBelow = createTranslateCommand({askForTargetLang: false, askForSourceLang: false});
 export const configureSettings = async () => {
   state.apiKey = await showApiKeyInput();
   if (!state.apiKey) {
