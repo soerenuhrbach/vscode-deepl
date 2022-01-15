@@ -32,7 +32,7 @@ function translateSelections(selections: vscode.Selection[], translateParam: Tra
           let replacement = translation;
           
           if (below) {
-            replacement += `\n${translation}`;
+            replacement = `${selection}\n${translation}`;
           }
           
           editor.replace(selection, replacement);
