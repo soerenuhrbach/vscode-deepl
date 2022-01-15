@@ -17,6 +17,7 @@ The following commands are available to translate texts:
 |DeepL: Translate|alt+t|Translates the selected text into the last used target language 
 |DeepL: Translate to ...|alt+shift+t|Asks for the target language and translates the selected text into the target language
 |DeepL: Translate from ... to ...|alt+ctrl+shift+t|Asks for source and target language and translates the selected text from the source language into the target language
+|DeepL: Translate below the original ...|ctrl+alt+t|Append translated text below the selected text
 
 The commands are accessible via the command pallette.
 
