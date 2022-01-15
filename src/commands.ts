@@ -29,12 +29,13 @@ function translateSelections(selections: vscode.Selection[], translateParam: Tra
         const translation = translations[index];
         
         if (selection && translation) {
-
+          let replacement = translation;
+          
           if (below) {
-            editor.replace(selection, `${selection}\n${translation}`);
-          } else {
-            editor.replace(selection, translation);
+            replacement += `\n${translation}`;
           }
+          
+          editor.replace(selection, replacement);
         }
 
         progress.report({ increment });
