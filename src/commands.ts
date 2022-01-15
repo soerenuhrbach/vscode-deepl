@@ -2,19 +2,10 @@ import * as deepl from './deepl';
 import * as vscode from 'vscode';
 import { state } from './state';
 import { showApiKeyInput, showSourceLanguageInput, showTargetLanguageInput, showUseProInput } from "./inputs";
-
-interface TranslateCommandParam {
-  askForTargetLang: boolean
-  askForSourceLang: boolean
-}
-
-interface TranslateParam {
-  targetLang: string
-  sourceLang?: string
-}
+import { TranslateCommandParam, TranslateParam } from './types';
 
 function translateSelections(selections: vscode.Selection[], translateParam: TranslateParam): Thenable<void> {
-  const { targetLang, sourceLang } = translateParam;
+  const { targetLang, sourceLang, below } = translateParam;
   return vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'Translating' }, async (progress) => {
     const increment = 100 / 2 / selections.length;
 
@@ -38,7 +29,12 @@ function translateSelections(selections: vscode.Selection[], translateParam: Tra
         const translation = translations[index];
         
         if (selection && translation) {
-          editor.replace(selection, translation);
+
+          if (below) {
+            editor.replace(selection, `${selection}\n${translation}`);
+          } else {
+            editor.replace(selection, translation);
+          }
         }
 
         progress.report({ increment });
@@ -48,7 +44,7 @@ function translateSelections(selections: vscode.Selection[], translateParam: Tra
 };
 
 function createTranslateCommand(param: TranslateCommandParam) {
-  const { askForTargetLang, askForSourceLang } = param;
+  const { askForTargetLang, askForSourceLang, below } = param;
   return async function() {
     if (!state.apiKey) {
       await configureSettings();
@@ -72,15 +68,16 @@ function createTranslateCommand(param: TranslateCommandParam) {
     const translateParam: TranslateParam = {
       targetLang: state.targetLanguage,
       sourceLang: sourceLang ?? undefined,
+      below
     };
     translateSelections(selections, translateParam);
   };
 }
 
-export const translate = createTranslateCommand({askForTargetLang: false, askForSourceLang: false});
-export const translateTo = createTranslateCommand({askForTargetLang: true, askForSourceLang: false});
-export const translateFromTo = createTranslateCommand({askForTargetLang: true, askForSourceLang: true});
-export const translateBelow = createTranslateCommand({askForTargetLang: false, askForSourceLang: false});
+export const translate = createTranslateCommand({askForTargetLang: false, askForSourceLang: false, below: false});
+export const translateTo = createTranslateCommand({askForTargetLang: true, askForSourceLang: false, below: false});
+export const translateFromTo = createTranslateCommand({askForTargetLang: true, askForSourceLang: true, below: false});
+export const translateBelow = createTranslateCommand({askForTargetLang: false, askForSourceLang: false, below: true});
 export const configureSettings = async () => {
   state.apiKey = await showApiKeyInput();
   if (!state.apiKey) {
