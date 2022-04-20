@@ -10,48 +10,53 @@ function translateSelections(selections: vscode.Selection[], translateParam: Tra
     const increment = 100 / 2 / selections.length;
 
     const texts = selections.map(selection => vscode.window.activeTextEditor?.document.getText(selection));
-    const translations = await Promise.all(	
+    const translations = await Promise.all(
       texts.map(async text => {
         if (!text) {
           progress.report({ increment });
           return null;
         }
-  
+
         const translations = await deepl.translate(text, targetLang, sourceLang).catch(() => []);
         progress.report({ increment });
-        return translations.length > 0 ? translations[0].text : null; 
+        return translations.length > 0 ? translations[0] : null;
       })
     );
-  
+
     await vscode.window.activeTextEditor?.edit((editor: vscode.TextEditorEdit) => {
       for (const index in selections) {
         const selection = selections[index];
         const translation = translations[index];
-        
+
         if (selection && translation) {
-          let replacement = translation;
-          
+          let replacement = translation.text;
+
           if (below) {
-            replacement = `${selection}\n${translation}`;
+            replacement = `${selection}\n${translation.text}`;
           }
-          
+
           editor.replace(selection, replacement);
         }
 
         progress.report({ increment });
       }
     });
+
+    vscode.window.showInformationMessage(`Translation complete, detected source languages: ${translations.map(t => t?.detected_source_language).join(", ")}`);
   });
 };
 
 function createTranslateCommand(param: TranslateCommandParam) {
   const { askForTargetLang, askForSourceLang, below } = param;
-  return async function() {
+  return async function () {
     if (!state.apiKey) {
       await configureSettings();
     }
 
-    const sourceLang = askForSourceLang ? await showSourceLanguageInput() : null;
+    const sourceLang = askForSourceLang ? await showSourceLanguageInput() : state.sourceLanguage ? state.sourceLanguage : null;
+    if (askForSourceLang && sourceLang) {
+      state.sourceLanguage = sourceLang;
+    }
 
     if (askForTargetLang || !state.targetLanguage) {
       state.targetLanguage = await showTargetLanguageInput();
@@ -75,10 +80,10 @@ function createTranslateCommand(param: TranslateCommandParam) {
   };
 }
 
-export const translate = createTranslateCommand({askForTargetLang: false, askForSourceLang: false, below: false});
-export const translateTo = createTranslateCommand({askForTargetLang: true, askForSourceLang: false, below: false});
-export const translateFromTo = createTranslateCommand({askForTargetLang: true, askForSourceLang: true, below: false});
-export const translateBelow = createTranslateCommand({askForTargetLang: false, askForSourceLang: false, below: true});
+export const translate = createTranslateCommand({ askForTargetLang: false, askForSourceLang: false, below: false });
+export const translateTo = createTranslateCommand({ askForTargetLang: true, askForSourceLang: false, below: false });
+export const translateFromTo = createTranslateCommand({ askForTargetLang: true, askForSourceLang: true, below: false });
+export const translateBelow = createTranslateCommand({ askForTargetLang: false, askForSourceLang: false, below: true });
 export const configureSettings = async () => {
   state.apiKey = await showApiKeyInput();
   if (!state.apiKey) {
