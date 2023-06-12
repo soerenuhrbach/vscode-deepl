@@ -26,6 +26,10 @@ export const showMessageWithTimeout = (message: string, timeout = 3000): void =>
   );
 };
 
+const sleep = (timeout: number) => new Promise(resolve => {
+  setTimeout(() => resolve(void 0), timeout);
+});
+
 /**
  * Waits for a condition to become true.
  *
@@ -37,7 +41,7 @@ export const showMessageWithTimeout = (message: string, timeout = 3000): void =>
 export const waitFor = async (timeout: number, condition: () => boolean): Promise<boolean> => {
   while (!condition() && timeout > 0) {
       timeout -= 100;
-      await sleep(100);
+      await sleep(100)
   }
 
   return timeout > 0 ? true : false;
