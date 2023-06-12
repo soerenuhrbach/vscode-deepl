@@ -69,6 +69,12 @@ Dont use this extension if you dont agree with their privacy policy!
 
 ## Release Notes
 
+### 1.0.5
+
+- Added a debug log
+- Added new command 'DeepL: Translate below the original' to insert the translation a line below the original text.
+- Bugs fixed 
+
 ### 1.0.4
 
 - Header authentication is now used instead of parameter authentication
