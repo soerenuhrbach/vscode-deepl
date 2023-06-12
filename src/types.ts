@@ -13,6 +13,7 @@ export type LanguageType = 'source' | 'target';
 
 export interface ExtensionState {
   targetLanguage: string | null,
+  sourceLanguage: string | null,
   apiKey: string | null,
   usePro: boolean,
   tagHandling: 'html' | 'xml' | 'off',

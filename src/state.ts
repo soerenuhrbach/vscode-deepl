@@ -6,6 +6,7 @@ const initialized = ref(false);
 
 export const state = reactive<ExtensionState>({
   targetLanguage: null,
+  sourceLanguage: null,
   apiKey: null,
   usePro: false,
   tagHandling: "off",
@@ -40,6 +41,7 @@ export function setup(context: vscode.ExtensionContext) {
   state.nonSplittingTags = config.get('nonSplittingTags') ?? "";
   state.preserveFormatting = config.get('preserveFormatting') ?? false;
   state.targetLanguage = context.workspaceState.get<string>('deepl:targetLanguage') ?? null;
+  state.sourceLanguage = context.workspaceState.get<string>('deepl:sourceLanguage') ?? null;
 
   watch(() => state.usePro, () => config.update('usePro', state.usePro, vscode.ConfigurationTarget.Global));
   watch(() => state.apiKey, () => config.update('apiKey', state.apiKey, vscode.ConfigurationTarget.Global));
@@ -51,6 +53,7 @@ export function setup(context: vscode.ExtensionContext) {
   watch(() => state.splitSentences, () => config.update('splitSentences', state.splitSentences, vscode.ConfigurationTarget.Global));
   watch(() => state.preserveFormatting, () => config.update('preserveFormatting', state.preserveFormatting, vscode.ConfigurationTarget.Global));
   watch(() => state.targetLanguage, () => context.workspaceState.update('deepl:targetLanguage', state.targetLanguage));
+  watch(() => state.sourceLanguage, () => context.workspaceState.update('deepl:sourceLanguage', state.sourceLanguage));
 
   const configurationChangeListener = vscode.workspace.onDidChangeConfiguration(e => {
     if (!e.affectsConfiguration('deepl')) {
