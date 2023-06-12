@@ -85,24 +85,25 @@
 						"default": "off",
 						"enum": [
 							"off",
+							"html",
 							"xml"
 						],
-						"markdownDescription": "Sets which kind of tags should be handled. Options currently available: 'xml'. [See offical documentation](https://www.deepl.com/de/docs-api/handling-xml/)"
+						"markdownDescription": "Sets which kind of tags should be handled. [See offical documentation](https://www.deepl.com/docs-api/handling-xml/)"
 					},
 					"deepl.splittingTags": {
 						"type": "string",
 						"default": "",
-						"markdownDescription": "Comma-separated list of XML tags which always cause splits. (Requires deepl.tagHandling to be enabled) [See offical documentation](https://www.deepl.com/de/docs-api/handling-xml/)"
+						"markdownDescription": "Comma-separated list of XML tags which always cause splits. (Requires deepl.tagHandling to be enabled) [See offical documentation](https://www.deepl.com/docs-api/handling-xml/)"
 					},
 					"deepl.nonSplittingTags": {
 						"type": "string",
 						"default": "",
-						"markdownDescription": "Comma-separated list of XML tags which never split sentences. (Requires deepl.tagHandling to be enabled) [See offical documentation](https://www.deepl.com/de/docs-api/handling-xml/)"
+						"markdownDescription": "Comma-separated list of XML tags which never split sentences. (Requires deepl.tagHandling to be enabled) [See offical documentation](https://www.deepl.com/docs-api/handling-xml/)"
 					},
 					"deepl.ignoreTags": {
 						"type": "string",
 						"default": "",
-						"markdownDescription": "Comma-separated list of XML tags that indicate text not to be translated. (Requires deepl.tagHandling to be enabled) [See offical documentation](https://www.deepl.com/de/docs-api/handling-xml/)"
+						"markdownDescription": "Comma-separated list of XML tags that indicate text not to be translated. (Requires deepl.tagHandling to be enabled) [See offical documentation](https://www.deepl.com/docs-api/handling-xml/)"
 					}
 				}
 			}
