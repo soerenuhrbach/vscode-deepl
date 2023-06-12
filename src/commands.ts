@@ -1,6 +1,8 @@
 import * as deepl from './deepl';
+import * as debug from './debug';
 import * as vscode from 'vscode';
 import { state } from './state';
+import { showMessageWithTimeout } from './vscode';
 import { showApiKeyInput, showSourceLanguageInput, showTargetLanguageInput, showUseProInput } from "./inputs";
 import { TranslateCommandParam, TranslateParam } from './types';
 
@@ -17,9 +19,20 @@ function translateSelections(selections: vscode.Selection[], translateParam: Tra
           return null;
         }
 
+        debug.write(
+          !!sourceLang
+            ? `Start translating '${text}' to '${targetLang}'`
+            : `Start translating '${text}' from '${sourceLang}' to '${targetLang}'`
+        );
         const translations = await deepl.translate(text, targetLang, sourceLang).catch(() => []);
+        const result = translations.length > 0 ? translations[0] : null;
         progress.report({ increment });
-        return translations.length > 0 ? translations[0] : null;
+        debug.write(
+          !!result
+            ? `Successfully translated '${text}' to '${result.text}'! (Source: '${result.detected_source_language}', Target: '${targetLang}')`
+            : `'${text}' could be translated to '${targetLang}! (Reason: DeepL-API returned no translation)'`
+        )
+        return result;
       })
     );
 
@@ -42,7 +55,7 @@ function translateSelections(selections: vscode.Selection[], translateParam: Tra
       }
     });
 
-    vscode.window.showInformationMessage(`Translation complete, detected source languages: ${translations.map(t => t?.detected_source_language).join(", ")}`);
+    showMessageWithTimeout(`Translation complete!`, 1500);
   });
 };
 
@@ -53,7 +66,11 @@ function createTranslateCommand(param: TranslateCommandParam) {
       await configureSettings();
     }
 
-    const sourceLang = askForSourceLang ? await showSourceLanguageInput() : state.sourceLanguage ? state.sourceLanguage : null;
+    const sourceLang = askForSourceLang
+      ? await showSourceLanguageInput()
+      : state.sourceLanguage
+        ? state.sourceLanguage
+        : null;
     if (askForSourceLang && sourceLang) {
       state.sourceLanguage = sourceLang;
     }
