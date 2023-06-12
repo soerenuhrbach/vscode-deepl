@@ -20,7 +20,8 @@ export const state = reactive<ExtensionState>({
   languages: {
     source: [],
     target: []
-  }
+  },
+  glossaryId: ""
 });
 
 export function setup(context: vscode.ExtensionContext) {
@@ -41,6 +42,7 @@ export function setup(context: vscode.ExtensionContext) {
   state.splitSentences = config.get('splitSentences') ?? "1";
   state.nonSplittingTags = config.get('nonSplittingTags') ?? "";
   state.preserveFormatting = config.get('preserveFormatting') ?? false;
+  state.glossaryId = config.get('glossaryId') ?? "";
   state.targetLanguage = context.workspaceState.get<string>('deepl:targetLanguage') ?? null;
   state.sourceLanguage = context.workspaceState.get<string>('deepl:sourceLanguage') ?? null;
 
@@ -56,6 +58,7 @@ export function setup(context: vscode.ExtensionContext) {
   watch(() => state.nonSplittingTags, () => config.update('nonSplittingTags', state.nonSplittingTags, vscode.ConfigurationTarget.Global));
   watch(() => state.splitSentences, () => config.update('splitSentences', state.splitSentences, vscode.ConfigurationTarget.Global));
   watch(() => state.preserveFormatting, () => config.update('preserveFormatting', state.preserveFormatting, vscode.ConfigurationTarget.Global));
+  watch(() => state.glossaryId, () => config.update('glossaryId', state.glossaryId, vscode.ConfigurationTarget.Global));
   watch(() => state.targetLanguage, () => context.workspaceState.update('deepl:targetLanguage', state.targetLanguage));
   watch(() => state.sourceLanguage, () => context.workspaceState.update('deepl:sourceLanguage', state.sourceLanguage));
 
@@ -66,7 +69,7 @@ export function setup(context: vscode.ExtensionContext) {
 
     debug.write(`Extension configuration has changed! Updating extension state...`);
 
-    const { usePro, apiKey, formality, splitSentences, tagHandling, ignoreTags, preserveFormatting, splittingTags, nonSplittingTags } = vscode.workspace.getConfiguration('deepl');
+    const { usePro, apiKey, formality, splitSentences, tagHandling, ignoreTags, preserveFormatting, splittingTags, nonSplittingTags, glossaryId } = vscode.workspace.getConfiguration('deepl');
 
     state.usePro = usePro;
     state.apiKey = apiKey;
@@ -77,6 +80,7 @@ export function setup(context: vscode.ExtensionContext) {
     state.splitSentences = splitSentences;
     state.nonSplittingTags = nonSplittingTags;
     state.preserveFormatting = preserveFormatting;
+    state.glossaryId = glossaryId;
 
     debug.write(`Updated extension state to:`);
     debug.write(JSON.stringify(state, null, 2));

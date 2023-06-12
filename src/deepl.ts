@@ -75,6 +75,10 @@ http.interceptors.request.use((config) => {
   config.params.split_sentences = state.splitSentences;
   config.params.preserve_formatting = state.preserveFormatting ? "1" : "0";
   
+  if (config.params.source_lang) {
+    config.params.glossary_id = state.glossaryId;
+  }
+
   if (config.params.target_lang && formalityAllowed.includes(config.params.target_lang.toUpperCase())) {
     config.params.formality = state.formality;
   }

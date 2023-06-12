@@ -26,7 +26,8 @@ export interface ExtensionState {
   languages: {
     source: Language[],
     target: Language[]
-  }
+  },
+  glossaryId: string
 };
 
 export interface TranslateCommandParam {
