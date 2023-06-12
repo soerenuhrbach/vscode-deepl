@@ -15,7 +15,7 @@ export interface ExtensionState {
   targetLanguage: string | null,
   apiKey: string | null,
   usePro: boolean,
-  tagHandling: 'xml' | 'off', 
+  tagHandling: 'html' | 'xml' | 'off',
   ignoreTags: string,
   formality: string,
   nonSplittingTags: string,
