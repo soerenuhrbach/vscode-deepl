@@ -45,7 +45,8 @@ function translateSelections(selections: vscode.Selection[], translateParam: Tra
           let replacement = translation.text;
 
           if (below) {
-            replacement = `${selection}\n${translation.text}`;
+            const originalText = vscode.window.activeTextEditor?.document.getText(selection);
+            replacement = `${originalText}\n${translation.text}`;
           }
 
           editor.replace(selection, replacement);
@@ -55,7 +56,7 @@ function translateSelections(selections: vscode.Selection[], translateParam: Tra
       }
     });
 
-    showMessageWithTimeout(`Translation complete!`, 1500);
+    showMessageWithTimeout(`Translation complete!`, 3000);
   });
 };
 
