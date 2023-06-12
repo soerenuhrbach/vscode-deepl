@@ -73,6 +73,7 @@ Dont use this extension if you dont agree with their privacy policy!
 
 - Added a debug log
 - Added new command 'DeepL: Translate below the original' to insert the translation a line below the original text.
+- Added tag handling for "html"
 - Bugs fixed 
 
 ### 1.0.4
