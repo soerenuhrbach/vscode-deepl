@@ -69,6 +69,10 @@ Dont use this extension if you dont agree with their privacy policy!
 
 ## Release Notes
 
+### 1.0.6
+
+- Added support for the "glossary_id" option
+
 ### 1.0.5
 
 - Added a debug log
