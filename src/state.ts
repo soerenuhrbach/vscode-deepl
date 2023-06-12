@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as debug from './debug';
 import { ExtensionState } from './types';
 import { reactive, watch, ref } from 'vue';
 
@@ -43,6 +44,9 @@ export function setup(context: vscode.ExtensionContext) {
   state.targetLanguage = context.workspaceState.get<string>('deepl:targetLanguage') ?? null;
   state.sourceLanguage = context.workspaceState.get<string>('deepl:sourceLanguage') ?? null;
 
+  debug.write(`Initialized extension using state:`);
+  debug.write(JSON.stringify(state, null, 2));
+
   watch(() => state.usePro, () => config.update('usePro', state.usePro, vscode.ConfigurationTarget.Global));
   watch(() => state.apiKey, () => config.update('apiKey', state.apiKey, vscode.ConfigurationTarget.Global));
   watch(() => state.formality, () => config.update('formality', state.formality, vscode.ConfigurationTarget.Global));
@@ -60,6 +64,8 @@ export function setup(context: vscode.ExtensionContext) {
       return;
     }
 
+    debug.write(`Extension configuration has changed! Updating extension state...`);
+
     const { usePro, apiKey, formality, splitSentences, tagHandling, ignoreTags, preserveFormatting, splittingTags, nonSplittingTags } = vscode.workspace.getConfiguration('deepl');
 
     state.usePro = usePro;
@@ -71,6 +77,9 @@ export function setup(context: vscode.ExtensionContext) {
     state.splitSentences = splitSentences;
     state.nonSplittingTags = nonSplittingTags;
     state.preserveFormatting = preserveFormatting;
+
+    debug.write(`Updated extension state to:`);
+    debug.write(JSON.stringify(state, null, 2));
   });
 
   context.subscriptions.push(configurationChangeListener);
