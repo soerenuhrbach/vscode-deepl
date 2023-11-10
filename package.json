@@ -207,7 +207,7 @@
 		"webpack-cli": "^4.7.0"
 	},
 	"dependencies": {
-		"axios": "^0.21.2",
+		"axios": "^1.6.0",
 		"vue": "^3.1.5",
 		"xstate": "^4.23.0"
 	}
