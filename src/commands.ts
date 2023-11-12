@@ -31,7 +31,7 @@ function translateSelections(selections: vscode.Selection[], translateParam: Tra
           !!result
             ? `Successfully translated '${text}' to '${result.text}'! (Source: '${result.detected_source_language}', Target: '${targetLang}')`
             : `'${text}' could be translated to '${targetLang}! (Reason: DeepL-API returned no translation)'`
-        )
+        );
         return result;
       })
     );
