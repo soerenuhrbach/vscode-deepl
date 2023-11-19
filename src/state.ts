@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as debug from './debug';
 import { ExtensionState } from './types';
 import { reactive, watch, ref } from 'vue';
+import { getDefaultSourceLanguage, getDefaultTargetLanguage } from './helper';
 
 const initialized = ref(false);
 
@@ -43,8 +44,8 @@ export function setup(context: vscode.ExtensionContext) {
   state.nonSplittingTags = config.get('nonSplittingTags') ?? "";
   state.preserveFormatting = config.get('preserveFormatting') ?? false;
   state.glossaryId = config.get('glossaryId') ?? "";
-  state.targetLanguage = context.workspaceState.get<string>('deepl:targetLanguage') ?? null;
-  state.sourceLanguage = context.workspaceState.get<string>('deepl:sourceLanguage') ?? null;
+  state.targetLanguage = context.workspaceState.get<string>('deepl:targetLanguage') ?? getDefaultTargetLanguage(config);
+  state.sourceLanguage = context.workspaceState.get<string>('deepl:sourceLanguage') ?? getDefaultSourceLanguage(config);
 
   debug.write(`Initialized extension using state:`);
   debug.write(JSON.stringify(state, null, 2));
@@ -69,7 +70,7 @@ export function setup(context: vscode.ExtensionContext) {
 
     debug.write(`Extension configuration has changed! Updating extension state...`);
 
-    const { usePro, apiKey, formality, splitSentences, tagHandling, ignoreTags, preserveFormatting, splittingTags, nonSplittingTags, glossaryId } = vscode.workspace.getConfiguration('deepl');
+    const { usePro, apiKey, formality, splitSentences, tagHandling, ignoreTags, preserveFormatting, splittingTags, nonSplittingTags, glossaryId, defaultTargetLanguage, defaultSourceLanguage } = vscode.workspace.getConfiguration('deepl');
 
     state.usePro = usePro;
     state.apiKey = apiKey;
@@ -81,6 +82,8 @@ export function setup(context: vscode.ExtensionContext) {
     state.nonSplittingTags = nonSplittingTags;
     state.preserveFormatting = preserveFormatting;
     state.glossaryId = glossaryId;
+    state.targetLanguage = context.workspaceState.get<string>('deepl:targetLanguage') ?? defaultTargetLanguage ?? null;
+    state.sourceLanguage = context.workspaceState.get<string>('deepl:sourceLanguage') ?? defaultSourceLanguage ?? null;
 
     debug.write(`Updated extension state to:`);
     debug.write(JSON.stringify(state, null, 2));

@@ -5,6 +5,7 @@ import { state } from './state';
 import { showMessageWithTimeout } from './vscode';
 import { showApiKeyInput, showSourceLanguageInput, showTargetLanguageInput, showUseProInput } from "./inputs";
 import { TranslateCommandParam, TranslateParam } from './types';
+import { getDefaultSourceLanguage, getDefaultTargetLanguage } from './helper';
 
 function translateSelections(selections: vscode.Selection[], translateParam: TranslateParam): Thenable<void> {
   const { targetLang, sourceLang, below } = translateParam;
@@ -31,7 +32,7 @@ function translateSelections(selections: vscode.Selection[], translateParam: Tra
           !!result
             ? `Successfully translated '${text}' to '${result.text}'! (Source: '${result.detected_source_language}', Target: '${targetLang}')`
             : `'${text}' could be translated to '${targetLang}! (Reason: DeepL-API returned no translation)'`
-        )
+        );
         return result;
       })
     );
@@ -73,15 +74,18 @@ function createTranslateCommand(param: TranslateCommandParam) {
         ? state.sourceLanguage
         : null;
     if (askForSourceLang && sourceLang) {
-      state.sourceLanguage = sourceLang;
+      state.sourceLanguage = sourceLang ?? getDefaultSourceLanguage();
     }
 
     if (askForTargetLang || !state.targetLanguage) {
-      state.targetLanguage = await showTargetLanguageInput();
+      const targetLanguage = await showTargetLanguageInput();
 
-      if (!state.targetLanguage) {
+      if (!targetLanguage) {
+        state.targetLanguage = getDefaultTargetLanguage();
         return;
       }
+
+      state.targetLanguage = targetLanguage;
     }
 
     const selections = vscode.window.activeTextEditor?.selections?.filter(selection => !selection.isEmpty);
