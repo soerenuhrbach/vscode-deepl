@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as debug from './debug';
 import { ExtensionState } from './types';
 import { reactive, watch, ref } from 'vue';
+import { getDefaultSourceLanguage, getDefaultTargetLanguage } from './helper';
 
 const initialized = ref(false);
 
@@ -43,8 +44,8 @@ export function setup(context: vscode.ExtensionContext) {
   state.nonSplittingTags = config.get('nonSplittingTags') ?? "";
   state.preserveFormatting = config.get('preserveFormatting') ?? false;
   state.glossaryId = config.get('glossaryId') ?? "";
-  state.targetLanguage = context.workspaceState.get<string>('deepl:targetLanguage') ?? config.get('defaultTargetLanguage', null);
-  state.sourceLanguage = context.workspaceState.get<string>('deepl:sourceLanguage') ?? config.get('defaultSourceLanguage', null);
+  state.targetLanguage = context.workspaceState.get<string>('deepl:targetLanguage') ?? getDefaultTargetLanguage(config);
+  state.sourceLanguage = context.workspaceState.get<string>('deepl:sourceLanguage') ?? getDefaultSourceLanguage(config);
 
   debug.write(`Initialized extension using state:`);
   debug.write(JSON.stringify(state, null, 2));

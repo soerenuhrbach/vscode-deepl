@@ -5,6 +5,7 @@ import { state } from './state';
 import { showMessageWithTimeout } from './vscode';
 import { showApiKeyInput, showSourceLanguageInput, showTargetLanguageInput, showUseProInput } from "./inputs";
 import { TranslateCommandParam, TranslateParam } from './types';
+import { getDefaultSourceLanguage, getDefaultTargetLanguage } from './helper';
 
 function translateSelections(selections: vscode.Selection[], translateParam: TranslateParam): Thenable<void> {
   const { targetLang, sourceLang, below } = translateParam;
@@ -73,15 +74,18 @@ function createTranslateCommand(param: TranslateCommandParam) {
         ? state.sourceLanguage
         : null;
     if (askForSourceLang && sourceLang) {
-      state.sourceLanguage = sourceLang;
+      state.sourceLanguage = sourceLang ?? getDefaultSourceLanguage();
     }
 
     if (askForTargetLang || !state.targetLanguage) {
-      state.targetLanguage = await showTargetLanguageInput();
+      const targetLanguage = await showTargetLanguageInput();
 
-      if (!state.targetLanguage) {
+      if (!targetLanguage) {
+        state.targetLanguage = getDefaultTargetLanguage();
         return;
       }
+
+      state.targetLanguage = targetLanguage;
     }
 
     const selections = vscode.window.activeTextEditor?.selections?.filter(selection => !selection.isEmpty);
