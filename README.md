@@ -56,6 +56,8 @@ Optional settings:
 * `deepl.splittingTags`: Comma-separated list of XML tags which always cause splits.
 * `deepl.nonSplittingTags`: Comma-separated list of XML tags which never split sentences. 
 * `deepl.ignoreTags`: Comma-separated list of XML tags that indicate text not to be translated.
+* `deepl.defaultTargetLanguage`: Specifies the default target language the text should be translated to. The default target language will be overwriten by choosing a different language using the language chooser. (See all available target languages in the [offical documentation](https://www.deepl.com/docs-api/translate-text))
+* `deepl.defaultSourceLanguage`: Specifies the default source language the text should be translated to. The default source language will be overwriten by choosing a different language using the language chooser. (See all available source languages in the [offical documentation](https://www.deepl.com/docs-api/translate-text))
 
 ## Disclaimer
 
@@ -68,6 +70,10 @@ The texts are translated via the online service of [DeepL](https://www.deepl.com
 Dont use this extension if you dont agree with their privacy policy!
 
 ## Release Notes
+
+### 1.0.7
+
+- Added new configuration options "defaultTargetLanguage" and "defaultSourceLanguage" to set global default languages.
 
 ### 1.0.6
 
