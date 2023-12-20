@@ -29,15 +29,4 @@ export function showApiKeyInput() {
     placeHolder: 'Please enter your DeepL API key',
     ignoreFocusOut: true
   }).then(x => x ?? null);
-} 
-
-export function showUseProInput() {
-  return vscode.window.showQuickPick(
-    ['No', 'Yes'],
-    {
-      title: 'Do you want to use the DeepL Pro API?',
-      placeHolder: 'Do you want to use the DeepL Pro API?',
-      ignoreFocusOut: true
-    }
-  ).then(x => x === 'Yes');
 }

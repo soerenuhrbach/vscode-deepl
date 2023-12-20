@@ -10,7 +10,6 @@ export const state = reactive<ExtensionState>({
   targetLanguage: null,
   sourceLanguage: null,
   apiKey: null,
-  usePro: false,
   tagHandling: "off",
   ignoreTags: "",
   nonSplittingTags: "",
@@ -34,7 +33,6 @@ export function setup(context: vscode.ExtensionContext) {
 
   const config = vscode.workspace.getConfiguration('deepl');
 
-  state.usePro = config.get('usePro') ?? false;
   state.apiKey = config.get('apiKey') ?? null;
   state.formality = config.get('formality') ?? "default";
   state.ignoreTags = config.get('ignoreTags') ?? "";
@@ -50,7 +48,6 @@ export function setup(context: vscode.ExtensionContext) {
   debug.write(`Initialized extension using state:`);
   debug.write(JSON.stringify(state, null, 2));
 
-  watch(() => state.usePro, () => config.update('usePro', state.usePro, vscode.ConfigurationTarget.Global));
   watch(() => state.apiKey, () => config.update('apiKey', state.apiKey, vscode.ConfigurationTarget.Global));
   watch(() => state.formality, () => config.update('formality', state.formality, vscode.ConfigurationTarget.Global));
   watch(() => state.ignoreTags, () => config.update('ignoreTags', state.ignoreTags, vscode.ConfigurationTarget.Global));
@@ -70,9 +67,8 @@ export function setup(context: vscode.ExtensionContext) {
 
     debug.write(`Extension configuration has changed! Updating extension state...`);
 
-    const { usePro, apiKey, formality, splitSentences, tagHandling, ignoreTags, preserveFormatting, splittingTags, nonSplittingTags, glossaryId, defaultTargetLanguage, defaultSourceLanguage } = vscode.workspace.getConfiguration('deepl');
+    const { apiKey, formality, splitSentences, tagHandling, ignoreTags, preserveFormatting, splittingTags, nonSplittingTags, glossaryId, defaultTargetLanguage, defaultSourceLanguage } = vscode.workspace.getConfiguration('deepl');
 
-    state.usePro = usePro;
     state.apiKey = apiKey;
     state.formality = formality;
     state.ignoreTags = ignoreTags;

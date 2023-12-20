@@ -4,6 +4,10 @@ All notable changes to the "vscode-deepl" extension will be documented in this f
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+### 1.0.8
+
+- You no longer need to explicitly set "deepl.usePro" in the configuration to use the DeepL Pro API because its now determined based on the given api key
+
 ### 1.0.7
 
 - Added new configuration options "defaultTargetLanguage" and "defaultSourceLanguage" to set global default languages.

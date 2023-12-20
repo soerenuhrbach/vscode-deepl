@@ -43,7 +43,6 @@ You can store the API key via the following settings.
 This extension contributes the following settings:
 
 * `deepl.apiKey`: The key is used to authenticate with the DeepL API. [See offical documentation](https://www.deepl.com/docs-api/accessing-the-api/authentication/)
-* `deepl.usePro`: Whether to use the DeepL Pro API - check this option if you use the paid plan.
 
 For this extension to work, the above settings must be made.
 
@@ -70,6 +69,10 @@ The texts are translated via the online service of [DeepL](https://www.deepl.com
 Dont use this extension if you dont agree with their privacy policy!
 
 ## Release Notes
+
+### 1.0.8
+
+- You no longer need to explicitly set "deepl.usePro" in the configuration to use the DeepL Pro API because its now determined based on the given api key
 
 ### 1.0.7
 

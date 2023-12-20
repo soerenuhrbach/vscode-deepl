@@ -3,7 +3,7 @@ import * as debug from './debug';
 import * as vscode from 'vscode';
 import { state } from './state';
 import { showMessageWithTimeout } from './vscode';
-import { showApiKeyInput, showSourceLanguageInput, showTargetLanguageInput, showUseProInput } from "./inputs";
+import { showApiKeyInput, showSourceLanguageInput, showTargetLanguageInput } from "./inputs";
 import { TranslateCommandParam, TranslateParam } from './types';
 import { getDefaultSourceLanguage, getDefaultTargetLanguage } from './helper';
 
@@ -111,5 +111,4 @@ export const configureSettings = async () => {
   if (!state.apiKey) {
     return;
   }
-  state.usePro = await showUseProInput();
 };

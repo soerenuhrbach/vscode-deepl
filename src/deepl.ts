@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { state } from './state';
 import { Language, LanguageType, Translation } from './types';
+import { isFreeAccountAuthKey } from 'deepl-node';
 
 /* eslint-disable */
 export enum DeepLErrorCodes {
@@ -62,9 +63,9 @@ const errorHandlers: ErrorHandler[] = [];
 const formalityAllowed: string[] = ["DE", "FR", "IT", "ES", "NL", "PL", "PT-PT", "PT-BR", "RU"];
 
 http.interceptors.request.use((config) => {
-  config.baseURL = state.usePro
-    ? 'https://api.deepl.com'
-    : 'https://api-free.deepl.com';
+  config.baseURL = isFreeAccountAuthKey(state.apiKey!)
+    ? 'https://api-free.deepl.com'
+    : 'https://api.deepl.com';
 
   if (!config.params) {
     config.params = {};
