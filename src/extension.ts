@@ -7,7 +7,7 @@ import { configureSettings, translate, translateFromTo, translateTo, translateBe
 export async function activate(context: vscode.ExtensionContext) {
   deepl.addErrorHandler(e => vscode.window.showErrorMessage(e.message));
 
-  setup(context);
+  await setup(context);
 
   context.subscriptions.push(createStatusBarItem());	
   context.subscriptions.push(vscode.commands.registerCommand('deepl.configure', configureSettings));

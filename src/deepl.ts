@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { state } from './state';
 import { Language, LanguageType, Translation } from './types';
+import { isFreeAccountAuthKey } from 'deepl-node';
 
 /* eslint-disable */
 export enum DeepLErrorCodes {
@@ -59,12 +60,10 @@ type ErrorHandler = (e: DeepLException) => void;
 const http = axios.create();
 const errorHandlers: ErrorHandler[] = [];
 
-const formalityAllowed: string[] = ["DE", "FR", "IT", "ES", "NL", "PL", "PT-PT", "PT-BR", "RU"];
-
 http.interceptors.request.use((config) => {
-  config.baseURL = state.usePro
-    ? 'https://api.deepl.com'
-    : 'https://api-free.deepl.com';
+  config.baseURL = isFreeAccountAuthKey(state.apiKey!)
+    ? 'https://api-free.deepl.com'
+    : 'https://api.deepl.com';
 
   if (!config.params) {
     config.params = {};
@@ -72,22 +71,27 @@ http.interceptors.request.use((config) => {
 
   config.headers.Authorization = `DeepL-Auth-Key ${state.apiKey}`;
   
-  config.params.split_sentences = state.splitSentences;
-  config.params.preserve_formatting = state.preserveFormatting ? "1" : "0";
+  if (config.url!.includes('translate')) {
+    config.params.split_sentences = state.splitSentences;
+    config.params.preserve_formatting = state.preserveFormatting ? "1" : "0";
+    
+    if (config.params.source_lang) {
+      config.params.glossary_id = state.glossaryId;
+    }
   
-  if (config.params.source_lang) {
-    config.params.glossary_id = state.glossaryId;
-  }
-
-  if (config.params.target_lang && formalityAllowed.includes(config.params.target_lang.toUpperCase())) {
-    config.params.formality = state.formality;
-  }
-  
-  if (state.tagHandling !== 'off') {
-    config.params.tag_handling = state.tagHandling;
-    config.params.ignore_tags = state.ignoreTags;
-    config.params.splitting_tags = state.splittingTags;
-    config.params.non_splitting_tags = state.nonSplittingTags;
+    const formalityAllowed: string[] = state.languages.target
+      .filter(x => x.supports_formality)
+      .map(x => x.language);
+    if (config.params.target_lang && formalityAllowed.includes(config.params.target_lang.toUpperCase())) {
+      config.params.formality = state.formality;
+    }
+    
+    if (state.tagHandling !== 'off') {
+      config.params.tag_handling = state.tagHandling;
+      config.params.ignore_tags = state.ignoreTags;
+      config.params.splitting_tags = state.splittingTags;
+      config.params.non_splitting_tags = state.nonSplittingTags;
+    }
   }
 
   return config;
@@ -123,12 +127,8 @@ export async function translate(text: string, targetLanguage: string, sourceLang
 } 
 
 export async function languages(type: LanguageType = 'source'): Promise<Language[]> {
-  if (state.languages[type].length === 0) {
-    const response = await http.get('/v2/languages', { params: { type } });
-    state.languages[type] = response.data as Language[];  
-  }
-
-  return state.languages[type];
+  const response = await http.get('/v2/languages', { params: { type } });
+  return response.data as Language[];
 }
 
 export const addErrorHandler = (handler: ErrorHandler) => errorHandlers.push(handler);
