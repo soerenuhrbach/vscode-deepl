@@ -70,6 +70,10 @@ Dont use this extension if you dont agree with their privacy policy!
 
 ## Release Notes
 
+### 1.0.9
+
+- Improved marketplace appearance
+
 ### 1.0.8
 
 - You no longer need to explicitly set "deepl.usePro" in the configuration to use the DeepL Pro API because its now determined based on the given api key
