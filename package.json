@@ -2,7 +2,7 @@
 	"name": "vscode-deepl",
 	"displayName": "DeepL for Visual Studio Code",
 	"description": "Easily translate into more than 25 languages directly from your favourite editor using DeepL.",
-	"version": "1.0.7",
+	"version": "1.0.8",
 	"keywords": [
 		"DeepL",
 		"Translate",
@@ -49,11 +49,6 @@
 						"type": "string",
 						"default": "",
 						"markdownDescription": "The key is used to authenticate with the DeepL API. [See offical documentation](https://www.deepl.com/docs-api/accessing-the-api/authentication/)"
-					},
-					"deepl.usePro": {
-						"type": "boolean",
-						"default": false,
-						"description": "Whether to use the DeepL Pro API"
 					},
 					"deepl.formality": {
 						"type": "string",
@@ -280,6 +275,7 @@
 	},
 	"dependencies": {
 		"axios": "^1.6.0",
+		"deepl-node": "^1.11.0",
 		"vue": "^3.1.5",
 		"xstate": "^4.23.0"
 	}

@@ -1,6 +1,8 @@
 export interface Language {
   language: string;
   name: string;
+  /* eslint-disable-next-line */
+  supports_formality?: boolean;
 };
 
 export interface Translation {
@@ -15,7 +17,6 @@ export interface ExtensionState {
   targetLanguage: string | null,
   sourceLanguage: string | null,
   apiKey: string | null,
-  usePro: boolean,
   tagHandling: 'html' | 'xml' | 'off',
   ignoreTags: string,
   formality: string,

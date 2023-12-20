@@ -3,7 +3,7 @@ import * as debug from './debug';
 import * as vscode from 'vscode';
 import { state } from './state';
 import { showMessageWithTimeout } from './vscode';
-import { showApiKeyInput, showSourceLanguageInput, showTargetLanguageInput, showUseProInput } from "./inputs";
+import { showApiKeyInput, showSourceLanguageInput, showTargetLanguageInput } from "./inputs";
 import { TranslateCommandParam, TranslateParam } from './types';
 import { getDefaultSourceLanguage, getDefaultTargetLanguage } from './helper';
 
@@ -57,7 +57,7 @@ function translateSelections(selections: vscode.Selection[], translateParam: Tra
       }
     });
 
-    showMessageWithTimeout(`Translation complete!`, 3000);
+    showMessageWithTimeout(`Translation completed!`, 3000);
   });
 };
 
@@ -66,15 +66,6 @@ function createTranslateCommand(param: TranslateCommandParam) {
   return async function () {
     if (!state.apiKey) {
       await configureSettings();
-    }
-
-    const sourceLang = askForSourceLang
-      ? await showSourceLanguageInput()
-      : state.sourceLanguage
-        ? state.sourceLanguage
-        : null;
-    if (askForSourceLang && sourceLang) {
-      state.sourceLanguage = sourceLang ?? getDefaultSourceLanguage();
     }
 
     if (askForTargetLang || !state.targetLanguage) {
@@ -86,6 +77,19 @@ function createTranslateCommand(param: TranslateCommandParam) {
       }
 
       state.targetLanguage = targetLanguage;
+    }
+
+    const sourceLang = askForSourceLang
+      ? await showSourceLanguageInput()
+      : state.sourceLanguage
+        ? state.sourceLanguage
+        : null;
+    if (askForSourceLang && sourceLang) {
+      state.sourceLanguage = sourceLang ?? getDefaultSourceLanguage();
+    }
+
+    if (state.targetLanguage === state.sourceLanguage) {
+      state.sourceLanguage = null;
     }
 
     const selections = vscode.window.activeTextEditor?.selections?.filter(selection => !selection.isEmpty);
@@ -111,5 +115,4 @@ export const configureSettings = async () => {
   if (!state.apiKey) {
     return;
   }
-  state.usePro = await showUseProInput();
 };

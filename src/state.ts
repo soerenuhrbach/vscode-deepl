@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as debug from './debug';
+import * as deepl from './deepl';
 import { ExtensionState } from './types';
 import { reactive, watch, ref } from 'vue';
 import { getDefaultSourceLanguage, getDefaultTargetLanguage } from './helper';
@@ -10,7 +11,6 @@ export const state = reactive<ExtensionState>({
   targetLanguage: null,
   sourceLanguage: null,
   apiKey: null,
-  usePro: false,
   tagHandling: "off",
   ignoreTags: "",
   nonSplittingTags: "",
@@ -25,17 +25,16 @@ export const state = reactive<ExtensionState>({
   glossaryId: ""
 });
 
-export function setup(context: vscode.ExtensionContext) {
-  if (initialized.value) {
-    return;
+const fillStateFromConfig = async (config: vscode.WorkspaceConfiguration, context: vscode.ExtensionContext) => {
+  state.apiKey = config.get('apiKey') ?? null;
+
+  if (state.languages.source.length < 1 && !!state.apiKey) {
+    state.languages.source = await deepl.languages('source');
+  }
+  if (state.languages.target.length < 1 && !!state.apiKey) {
+    state.languages.target = await deepl.languages('target');
   }
 
-  initialized.value = true;
-
-  const config = vscode.workspace.getConfiguration('deepl');
-
-  state.usePro = config.get('usePro') ?? false;
-  state.apiKey = config.get('apiKey') ?? null;
   state.formality = config.get('formality') ?? "default";
   state.ignoreTags = config.get('ignoreTags') ?? "";
   state.tagHandling = config.get('tagHandling') ?? "off";
@@ -44,13 +43,32 @@ export function setup(context: vscode.ExtensionContext) {
   state.nonSplittingTags = config.get('nonSplittingTags') ?? "";
   state.preserveFormatting = config.get('preserveFormatting') ?? false;
   state.glossaryId = config.get('glossaryId') ?? "";
-  state.targetLanguage = context.workspaceState.get<string>('deepl:targetLanguage') ?? getDefaultTargetLanguage(config);
-  state.sourceLanguage = context.workspaceState.get<string>('deepl:sourceLanguage') ?? getDefaultSourceLanguage(config);
+
+  const targetLanguage = context.workspaceState.get<string>('deepl:targetLanguage') ?? getDefaultTargetLanguage(config);
+  state.targetLanguage = targetLanguage && state.languages.target.map(x => x.language.toLowerCase()).includes(targetLanguage.toLowerCase())
+    ? targetLanguage
+    : null;
+
+  const sourceLanguage = context.workspaceState.get<string>('deepl:sourceLanguage') ?? getDefaultSourceLanguage(config);
+  state.sourceLanguage = sourceLanguage && state.languages.source.map(x => x.language.toLowerCase()).includes(sourceLanguage.toLowerCase())
+    ? sourceLanguage
+    : null;
+};
+
+export async function setup(context: vscode.ExtensionContext) {
+  if (initialized.value) {
+    return;
+  }
+
+  initialized.value = true;
+
+  const config = vscode.workspace.getConfiguration('deepl');
+
+  await fillStateFromConfig(config, context);
 
   debug.write(`Initialized extension using state:`);
   debug.write(JSON.stringify(state, null, 2));
 
-  watch(() => state.usePro, () => config.update('usePro', state.usePro, vscode.ConfigurationTarget.Global));
   watch(() => state.apiKey, () => config.update('apiKey', state.apiKey, vscode.ConfigurationTarget.Global));
   watch(() => state.formality, () => config.update('formality', state.formality, vscode.ConfigurationTarget.Global));
   watch(() => state.ignoreTags, () => config.update('ignoreTags', state.ignoreTags, vscode.ConfigurationTarget.Global));
@@ -70,20 +88,9 @@ export function setup(context: vscode.ExtensionContext) {
 
     debug.write(`Extension configuration has changed! Updating extension state...`);
 
-    const { usePro, apiKey, formality, splitSentences, tagHandling, ignoreTags, preserveFormatting, splittingTags, nonSplittingTags, glossaryId, defaultTargetLanguage, defaultSourceLanguage } = vscode.workspace.getConfiguration('deepl');
+    const config = vscode.workspace.getConfiguration('deepl');
 
-    state.usePro = usePro;
-    state.apiKey = apiKey;
-    state.formality = formality;
-    state.ignoreTags = ignoreTags;
-    state.tagHandling = tagHandling;
-    state.splittingTags = splittingTags;
-    state.splitSentences = splitSentences;
-    state.nonSplittingTags = nonSplittingTags;
-    state.preserveFormatting = preserveFormatting;
-    state.glossaryId = glossaryId;
-    state.targetLanguage = context.workspaceState.get<string>('deepl:targetLanguage') ?? defaultTargetLanguage ?? null;
-    state.sourceLanguage = context.workspaceState.get<string>('deepl:sourceLanguage') ?? defaultSourceLanguage ?? null;
+    fillStateFromConfig(config, context);
 
     debug.write(`Updated extension state to:`);
     debug.write(JSON.stringify(state, null, 2));

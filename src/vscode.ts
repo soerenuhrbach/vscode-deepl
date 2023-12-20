@@ -41,7 +41,7 @@ const sleep = (timeout: number) => new Promise(resolve => {
 export const waitFor = async (timeout: number, condition: () => boolean): Promise<boolean> => {
   while (!condition() && timeout > 0) {
       timeout -= 100;
-      await sleep(100)
+      await sleep(100);
   }
 
   return timeout > 0 ? true : false;
