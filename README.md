@@ -70,6 +70,7 @@ Dont use this extension if you dont agree with their privacy policy!
 
 ## Release Notes
 
+### 1.0.10
 ### 1.0.9
 
 - Improved marketplace appearance
