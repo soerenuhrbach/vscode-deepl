@@ -68,15 +68,6 @@ function createTranslateCommand(param: TranslateCommandParam) {
       await configureSettings();
     }
 
-    const sourceLang = askForSourceLang
-      ? await showSourceLanguageInput()
-      : state.sourceLanguage
-        ? state.sourceLanguage
-        : null;
-    if (askForSourceLang && sourceLang) {
-      state.sourceLanguage = sourceLang ?? getDefaultSourceLanguage();
-    }
-
     if (askForTargetLang || !state.targetLanguage) {
       const targetLanguage = await showTargetLanguageInput();
 
@@ -86,6 +77,19 @@ function createTranslateCommand(param: TranslateCommandParam) {
       }
 
       state.targetLanguage = targetLanguage;
+    }
+
+    const sourceLang = askForSourceLang
+      ? await showSourceLanguageInput()
+      : state.sourceLanguage
+        ? state.sourceLanguage
+        : null;
+    if (askForSourceLang && sourceLang) {
+      state.sourceLanguage = sourceLang ?? getDefaultSourceLanguage();
+    }
+
+    if (state.targetLanguage === state.sourceLanguage) {
+      state.sourceLanguage = null;
     }
 
     const selections = vscode.window.activeTextEditor?.selections?.filter(selection => !selection.isEmpty);
