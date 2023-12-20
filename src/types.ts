@@ -1,6 +1,8 @@
 export interface Language {
   language: string;
   name: string;
+  /* eslint-disable-next-line */
+  supports_formality?: boolean;
 };
 
 export interface Translation {

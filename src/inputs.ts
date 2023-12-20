@@ -1,15 +1,13 @@
-import * as deepl from './deepl';
 import * as vscode from 'vscode';
 import { LanguageType } from './types';
+import { state } from './state';
 
 async function showLanguageInput(options: vscode.QuickPickOptions, type: LanguageType): Promise<string | null> {
-  const languages = await deepl.languages(type)
-    .then((languages): vscode.QuickPickItem[] => {
-      return languages.map(language => ({
-        label: language.name,
-        description: language.language
-      }));
-    });
+  const languages = state.languages[type]
+    .map(language => ({
+      label: language.name,
+      description: language.language
+    }));
 
   return vscode.window.showQuickPick(languages, options)
     .then(item => item?.description ?? null);

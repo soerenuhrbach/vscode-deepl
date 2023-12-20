@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ### 1.0.8
 
 - You no longer need to explicitly set "deepl.usePro" in the configuration to use the DeepL Pro API because its now determined based on the given api key
+- Added validation to avoid the usage of unsupported source / target languages
 
 ### 1.0.7
 

@@ -57,7 +57,7 @@ function translateSelections(selections: vscode.Selection[], translateParam: Tra
       }
     });
 
-    showMessageWithTimeout(`Translation complete!`, 3000);
+    showMessageWithTimeout(`Translation completed!`, 3000);
   });
 };
 
