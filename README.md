@@ -1,4 +1,4 @@
-# vscode-deepl
+# Translate with DeepL for Visual Studio Code (vscode-deepl)
 
 Translate texts in more than 25 languages directly in your favourite code editor powered by [DeepL](https://www.deepl.com/translator).
 This extension provides all the necessary integrations to easily translate texts without leaving your code editor.
@@ -70,6 +70,7 @@ Dont use this extension if you dont agree with their privacy policy!
 
 ## Release Notes
 
+### 1.0.11
 ### 1.0.10
 ### 1.0.9
 
