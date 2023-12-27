@@ -1,14 +1,15 @@
 {
 	"name": "vscode-deepl",
-	"displayName": "Translate with DeepL",
-	"description": "Easily translate into more than 25 languages directly from your favourite editor using DeepL.",
-	"version": "1.0.10",
+	"displayName": "Translate with DeepL for Visual Studio Code",
+	"description": "Easily translate into more than 25 languages directly from your visual studio code editor using DeepL.",
+	"version": "1.0.11",
 	"keywords": [
 		"DeepL",
 		"Translate",
 		"Translator",
 		"Languages",
-		"Text Translations"
+		"Text Translations",
+		"Visual Studio Code"
 	],
 	"repository": {
 		"type": "git",
