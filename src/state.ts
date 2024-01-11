@@ -97,4 +97,4 @@ export async function setup(context: vscode.ExtensionContext) {
   });
 
   context.subscriptions.push(configurationChangeListener);
-};
+}

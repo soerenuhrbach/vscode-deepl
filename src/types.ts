@@ -3,13 +3,13 @@ export interface Language {
   name: string;
   /* eslint-disable-next-line */
   supports_formality?: boolean;
-};
+}
 
 export interface Translation {
   /* eslint-disable-next-line */
   detected_source_language: string;
   text: string;
-};
+}
 
 export type LanguageType = 'source' | 'target';
 
@@ -29,7 +29,7 @@ export interface ExtensionState {
     target: Language[]
   },
   glossaryId: string
-};
+}
 
 export interface TranslateCommandParam {
   askForTargetLang: boolean

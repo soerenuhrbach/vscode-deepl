@@ -27,7 +27,7 @@ export class DeepLException extends Error {
   }
 
   public static createFromStatusCodeAndMessage(code: number, message: string) {
-    var exception = new DeepLException(code);
+    const exception = new DeepLException(code);
     exception.name = DeepLException.name;
     switch (code) {
       case DeepLErrorCodes.AUTHORIZATION_FAILED:

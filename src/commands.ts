@@ -21,7 +21,7 @@ function translateSelections(selections: vscode.Selection[], translateParam: Tra
         }
 
         debug.write(
-          !!sourceLang
+          sourceLang
             ? `Start translating '${text}' to '${targetLang}'`
             : `Start translating '${text}' from '${sourceLang}' to '${targetLang}'`
         );
@@ -29,7 +29,7 @@ function translateSelections(selections: vscode.Selection[], translateParam: Tra
         const result = translations.length > 0 ? translations[0] : null;
         progress.report({ increment });
         debug.write(
-          !!result
+          result
             ? `Successfully translated '${text}' to '${result.text}'! (Source: '${result.detected_source_language}', Target: '${targetLang}')`
             : `'${text}' could be translated to '${targetLang}! (Reason: DeepL-API returned no translation)'`
         );
@@ -59,7 +59,7 @@ function translateSelections(selections: vscode.Selection[], translateParam: Tra
 
     showMessageWithTimeout(`Translation completed!`, 3000);
   });
-};
+}
 
 function createTranslateCommand(param: TranslateCommandParam) {
   const { askForTargetLang, askForSourceLang, below } = param;
