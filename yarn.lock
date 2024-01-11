@@ -1977,6 +1977,7 @@ string-argv@0.3.2:
   integrity sha512-aqD2Q0144Z+/RqG52NeHEkZauTAUWJO8c6yTftGJKO3Tja5tUgIfmIl6kExvhtxSDP7fXB6DvzkfMpCd/F3G+Q==
 
 "string-width-cjs@npm:string-width@^4.2.0", string-width@^4.1.0:
+  name string-width-cjs
   version "4.2.3"
   resolved "https://registry.yarnpkg.com/string-width/-/string-width-4.2.3.tgz#269c7117d27b05ad2e536830a8ec895ef9c6d010"
   integrity sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==
@@ -2292,10 +2293,10 @@ wrappy@1:
   resolved "https://registry.yarnpkg.com/wrappy/-/wrappy-1.0.2.tgz#b5243d8f3ec1aa35f1364605bc0d1036e30ab69f"
   integrity sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==
 
-xstate@^5.5.1:
-  version "5.5.1"
-  resolved "https://registry.yarnpkg.com/xstate/-/xstate-5.5.1.tgz#279ee1a8c537278e5cae414964938ade045f6f2b"
-  integrity sha512-12Was43pPJKg3JWoelOREtTNYgFz6tRlNrMaRuqOibEe3pn8/uOWiP8ySMfOynyIjHUxd4BU7wV9O54Ma3FM6g==
+xstate@4.23.0:
+  version "4.23.0"
+  resolved "https://registry.yarnpkg.com/xstate/-/xstate-4.23.0.tgz#af0bd09c726dccedf16f8ba30d0d1efff7af5207"
+  integrity sha512-YIKb7thsDfpb6ooWJJuj+UnNZq923dG264zfpS2/vi4dkZz41ugO0ktC6QCBDeMfH8LBHhhqZ06sR4AYgWWnWg==
 
 yallist@^4.0.0:
   version "4.0.0"
