@@ -278,10 +278,10 @@
 		"webpack-cli": "^5.1.4"
 	},
 	"dependencies": {
+		"@vue/reactivity": "^3.4.10",
 		"axios": "^1.6.0",
 		"deepl-node": "^1.11.0",
 		"lint-staged": "^15.2.0",
-		"vue": "^3.1.5",
 		"xstate": "4.23.0"
 	},
 	"lint-staged": {

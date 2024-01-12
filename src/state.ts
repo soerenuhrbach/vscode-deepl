@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as debug from './debug';
 import * as deepl from './deepl';
 import { ExtensionState } from './types';
-import { reactive, watch, ref } from 'vue';
+import { reactive, effect, ref } from '@vue/reactivity';
 import { getDefaultSourceLanguage, getDefaultTargetLanguage } from './helper';
 
 const initialized = ref(false);
@@ -69,17 +69,17 @@ export async function setup(context: vscode.ExtensionContext) {
   debug.write(`Initialized extension using state:`);
   debug.write(JSON.stringify(state, null, 2));
 
-  watch(() => state.apiKey, () => config.update('apiKey', state.apiKey, vscode.ConfigurationTarget.Global));
-  watch(() => state.formality, () => config.update('formality', state.formality, vscode.ConfigurationTarget.Global));
-  watch(() => state.ignoreTags, () => config.update('ignoreTags', state.ignoreTags, vscode.ConfigurationTarget.Global));
-  watch(() => state.tagHandling, () => config.update('tagHandling', state.tagHandling, vscode.ConfigurationTarget.Global));
-  watch(() => state.splittingTags, () => config.update('splittingTags', state.splittingTags, vscode.ConfigurationTarget.Global));
-  watch(() => state.nonSplittingTags, () => config.update('nonSplittingTags', state.nonSplittingTags, vscode.ConfigurationTarget.Global));
-  watch(() => state.splitSentences, () => config.update('splitSentences', state.splitSentences, vscode.ConfigurationTarget.Global));
-  watch(() => state.preserveFormatting, () => config.update('preserveFormatting', state.preserveFormatting, vscode.ConfigurationTarget.Global));
-  watch(() => state.glossaryId, () => config.update('glossaryId', state.glossaryId, vscode.ConfigurationTarget.Global));
-  watch(() => state.targetLanguage, () => context.workspaceState.update('deepl:targetLanguage', state.targetLanguage));
-  watch(() => state.sourceLanguage, () => context.workspaceState.update('deepl:sourceLanguage', state.sourceLanguage));
+  effect(() => config.update('apiKey', state.apiKey, vscode.ConfigurationTarget.Global));
+  effect(() => config.update('formality', state.formality, vscode.ConfigurationTarget.Global));
+  effect(() => config.update('ignoreTags', state.ignoreTags, vscode.ConfigurationTarget.Global));
+  effect(() => config.update('tagHandling', state.tagHandling, vscode.ConfigurationTarget.Global));
+  effect(() => config.update('splittingTags', state.splittingTags, vscode.ConfigurationTarget.Global));
+  effect(() => config.update('nonSplittingTags', state.nonSplittingTags, vscode.ConfigurationTarget.Global));
+  effect(() => config.update('splitSentences', state.splitSentences, vscode.ConfigurationTarget.Global));
+  effect(() => config.update('preserveFormatting', state.preserveFormatting, vscode.ConfigurationTarget.Global));
+  effect(() => config.update('glossaryId', state.glossaryId, vscode.ConfigurationTarget.Global));
+  effect(() => context.workspaceState.update('deepl:targetLanguage', state.targetLanguage));
+  effect(() => context.workspaceState.update('deepl:sourceLanguage', state.sourceLanguage));
 
   const configurationChangeListener = vscode.workspace.onDidChangeConfiguration(e => {
     if (!e.affectsConfiguration('deepl')) {

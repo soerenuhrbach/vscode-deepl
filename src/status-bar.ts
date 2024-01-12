@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as deepl from './deepl';
 import { state } from './state';
-import { watchEffect } from 'vue'; 
+import { effect } from '@vue/reactivity';
 import { createMachine, assign, interpret } from 'xstate';
 
 type StatusBarEvent =
@@ -101,7 +101,7 @@ export function createStatusBarItem() {
     })
     .start();
 
-  watchEffect(() => {
+  effect(() => {
     service.send({ type: 'SET_API_KEY', value: state.apiKey });
     service.send({ type: 'SET_TARGET_LANGUAGE', value: state.targetLanguage });
   });
