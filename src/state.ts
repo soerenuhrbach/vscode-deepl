@@ -113,7 +113,7 @@ export async function setup(context: vscode.ExtensionContext) {
       return;
     }
 
-    debug.write(`ApiKey secret has been changed!`);
+    debug.write(`Secret (${CONFIG_API_KEY}) has been changed!`);
     loadExtensionState(config, context);
   });
 
