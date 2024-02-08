@@ -29,11 +29,7 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onStartupFinished",
-		"onCommand:deepl.translate",
-		"onCommand:deepl.translateTo",
-		"onCommand:deepl.translateFromTo",
-		"onCommand:deepl.translateBelow"
+		"onStartupFinished"
 	],
 	"icon": "resources/logo@2.png",
 	"galleryBanner": {
@@ -49,6 +45,7 @@
 					"deepl.apiKey": {
 						"type": "string",
 						"default": "",
+						"deprecationMessage": "For security reasons the api key will no longer be stored in the configuration. Configured api keys will be automatically migrated to the vscode secret store and removed from the config. The config option will be removed in future releases!",
 						"markdownDescription": "The key is used to authenticate with the DeepL API. [See offical documentation](https://www.deepl.com/docs-api/accessing-the-api/authentication/)"
 					},
 					"deepl.formality": {
@@ -275,13 +272,13 @@
 		"ts-node": "^10.1.0",
 		"typescript": "^5.3.3",
 		"webpack": "^5.76.0",
-		"webpack-cli": "^5.1.4"
+		"webpack-cli": "^5.1.4",
+		"lint-staged": "^15.2.0"
 	},
 	"dependencies": {
 		"@vue/reactivity": "^3.4.10",
 		"axios": "^1.6.0",
 		"deepl-node": "^1.11.0",
-		"lint-staged": "^15.2.0",
 		"xstate": "4.23.0"
 	},
 	"lint-staged": {
