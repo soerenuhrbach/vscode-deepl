@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
-import * as debug from './debug';
 import * as deepl from './deepl';
+import * as debug from './debug';
 import type { ExtensionState } from './types';
 import { reactive, effect, ref } from '@vue/reactivity';
 import { getDefaultSourceLanguage, getDefaultTargetLanguage } from './helper';
@@ -18,56 +18,49 @@ import {
   WORKSPACE_TARGET_LANGUAGE,
   WORKSPACE_SOURCE_LANGUAGE
 } from './constants';
+import { SourceLanguageCode, TargetLanguageCode } from 'deepl-node';
 
 const initialized = ref(false);
 
 export const state = reactive<ExtensionState>({
-  targetLanguage: null,
-  sourceLanguage: null,
-  apiKey: null,
-  tagHandling: "off",
-  ignoreTags: "",
-  nonSplittingTags: "",
-  splittingTags: "",
-  preserveFormatting: false,
-  formality: "default",
-  splitSentences: "1",
-  languages: {
-    source: [],
-    target: []
-  },
-  glossaryId: ""
+  apiKey: undefined,
+  targetLanguage: undefined,
+  sourceLanguage: undefined,
+  tagHandling: undefined,
+  ignoreTags: undefined,
+  nonSplittingTags: undefined,
+  splittingTags: undefined,
+  preserveFormatting: undefined,
+  formality: undefined,
+  splitSentences: undefined,
+  glossaryId: undefined
 });
 
 const loadExtensionState = async (config: vscode.WorkspaceConfiguration, context: vscode.ExtensionContext) => {
   debug.write('Loading extension state...');
-  state.apiKey = await context.secrets.get(CONFIG_API_KEY) || null;
+  state.apiKey = await context.secrets.get(CONFIG_API_KEY);
 
-  if (state.languages.source.length < 1 && !!state.apiKey) {
-    state.languages.source = await deepl.languages('source');
-  }
-  if (state.languages.target.length < 1 && !!state.apiKey) {
-    state.languages.target = await deepl.languages('target');
-  }
+  const sourceLanguages = await deepl.getSourceLanguages();
+  const targetLanguages = await deepl.getTargetLanguages();
 
-  state.formality = config.get(CONFIG_FORMALITY) ?? "default";
-  state.ignoreTags = config.get(CONFIG_IGNORE_TAGS) ?? "";
-  state.tagHandling = config.get(CONFIG_TAG_HANDLING) ?? "off";
-  state.splittingTags = config.get(CONFIG_SPLITTING_TAGS) ?? "";
-  state.splitSentences = config.get(CONFIG_SPLIT_SENTENCES) ?? "1";
-  state.nonSplittingTags = config.get(CONFIG_NON_SPLITTING_TAGS) ?? "";
-  state.preserveFormatting = config.get(CONFIG_PRESERVE_FORMATTING) ?? false;
-  state.glossaryId = config.get(CONFIG_GLOSSARY_ID) ?? "";
+  state.formality = config.get(CONFIG_FORMALITY) ?? undefined;
+  state.glossaryId = config.get(CONFIG_GLOSSARY_ID) ?? undefined;
+  state.ignoreTags = config.get(CONFIG_IGNORE_TAGS) ?? undefined;
+  state.tagHandling = config.get(CONFIG_TAG_HANDLING) ?? undefined;
+  state.splittingTags = config.get(CONFIG_SPLITTING_TAGS) ?? undefined;
+  state.splitSentences = config.get(CONFIG_SPLIT_SENTENCES) ?? undefined;
+  state.nonSplittingTags = config.get(CONFIG_NON_SPLITTING_TAGS) ?? undefined;
+  state.preserveFormatting = config.get(CONFIG_PRESERVE_FORMATTING) ?? undefined;
 
-  const targetLanguage = context.workspaceState.get<string>(WORKSPACE_TARGET_LANGUAGE) ?? getDefaultTargetLanguage(config);
-  state.targetLanguage = targetLanguage && state.languages.target.map(x => x.language.toLowerCase()).includes(targetLanguage.toLowerCase())
+  const targetLanguage = context.workspaceState.get<TargetLanguageCode>(WORKSPACE_TARGET_LANGUAGE) ?? getDefaultTargetLanguage(config);
+  state.targetLanguage = targetLanguage && targetLanguages.map(x => x.code.toLowerCase()).includes(targetLanguage.toLowerCase())
     ? targetLanguage
-    : null;
+    : undefined;
 
-  const sourceLanguage = context.workspaceState.get<string>(WORKSPACE_SOURCE_LANGUAGE) ?? getDefaultSourceLanguage(config);
-  state.sourceLanguage = sourceLanguage && state.languages.source.map(x => x.language.toLowerCase()).includes(sourceLanguage.toLowerCase())
+  const sourceLanguage = context.workspaceState.get<SourceLanguageCode>(WORKSPACE_SOURCE_LANGUAGE) ?? getDefaultSourceLanguage(config);
+  state.sourceLanguage = sourceLanguage && sourceLanguages.map(x => x.code.toLowerCase()).includes(sourceLanguage.toLowerCase())
     ? sourceLanguage
-    : null;
+    : undefined;
 
   debug.write(`Loaded extension state:`);
   debug.write(JSON.stringify(state, null, 2));
@@ -82,6 +75,12 @@ const migrateApiKeyFromConfigToSecrets = async (config: vscode.WorkspaceConfigur
   await context.secrets.store(CONFIG_API_KEY, apiKeyFromConfiguration);
   config.update(CONFIG_API_KEY, apiKeyFromConfiguration, vscode.ConfigurationTarget.Global);
   debug.write('Moved api key from configuration to secret store.');
+};
+
+// TODO: migrate workspace state for target language to new keys
+
+const migrateWorkspaceStates = async (config: vscode.WorkspaceConfiguration, context: vscode.ExtensionContext) => {
+
 };
 
 export async function setup(context: vscode.ExtensionContext) {

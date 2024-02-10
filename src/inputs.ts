@@ -1,24 +1,21 @@
 import * as vscode from 'vscode';
-import { LanguageType } from './types';
-import { state } from './state';
+import * as deepl from './deepl';
+import { Language, SourceLanguageCode, TargetLanguageCode } from 'deepl-node';
 
-async function showLanguageInput(options: vscode.QuickPickOptions, type: LanguageType): Promise<string | null> {
-  const languages = state.languages[type]
-    .map(language => ({
-      label: language.name,
-      description: language.language
-    }));
-
-  return vscode.window.showQuickPick(languages, options)
-    .then(item => item?.description ?? null);
+function showLanguageInput<T = SourceLanguageCode | TargetLanguageCode>(options: vscode.QuickPickOptions, languages: readonly Language[]): Thenable<T | undefined> {
+  const items = languages.map(x => ({ label: x.name, description: x.code }));
+  return vscode.window.showQuickPick(items, options)
+    .then(item => item?.description as T | undefined);
 }
 
-export function showTargetLanguageInput() {
-  return showLanguageInput({ placeHolder: 'Select the language you want to translate into' }, 'target');
+export async function showTargetLanguageInput() {
+  const languages = await deepl.getTargetLanguages();
+  return showLanguageInput<TargetLanguageCode>({ placeHolder: 'Select the language you want to translate into' }, languages);
 }
 
-export function showSourceLanguageInput() {
-  return showLanguageInput({ placeHolder: 'Select the language you want to translate from' }, 'source');
+export async function showSourceLanguageInput() {
+  const languages = await deepl.getSourceLanguages();
+  return showLanguageInput<SourceLanguageCode>({ placeHolder: 'Select the language you want to translate from' }, languages);
 }
 
 export function showApiKeyInput() {
@@ -26,5 +23,5 @@ export function showApiKeyInput() {
     title: 'Please enter your DeepL API key',
     placeHolder: 'Please enter your DeepL API key',
     ignoreFocusOut: true
-  }).then(x => x ?? null);
+  }).then(x => x ?? undefined);
 }

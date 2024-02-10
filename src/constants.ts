@@ -13,3 +13,11 @@ export const CONFIG_DEFAULT_TARGET_LANGUAGE = `${DEEPL_CONFIGURATION_SECTION}.de
 export const CONFIG_DEFAULT_SOURCE_LANGUAGE = `${DEEPL_CONFIGURATION_SECTION}.defaultSourceLanguage`;
 export const WORKSPACE_TARGET_LANGUAGE = `${DEEPL_CONFIGURATION_SECTION}.targetLanguage`;
 export const WORKSPACE_SOURCE_LANGUAGE = `${DEEPL_CONFIGURATION_SECTION}.sourceLanguage`;
+
+export const EXTENSION_IDENTIFIER = 'soerenuhrbach.vscode-deepl';
+
+export const COMMAND_CONFIGURE = 'deepl.configure';
+export const COMMAND_TRANSLATE = 'deepl.translate';
+export const COMMAND_TRANSLATE_TO = 'deepl.translateTo';
+export const COMMAND_TRANSLATE_FROM_TO = 'deepl.translateFromTo';
+export const COMMAND_TRANSLATE_BELOW = 'deepl.translateBelow';

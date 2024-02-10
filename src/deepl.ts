@@ -1,134 +1,64 @@
-import axios from 'axios';
+import * as vscode from 'vscode';
 import { state } from './state';
-import { Language, LanguageType, Translation } from './types';
-import { isFreeAccountAuthKey } from 'deepl-node';
+import { Language, SourceLanguageCode, TargetLanguageCode, TextResult, Translator } from 'deepl-node';
+import { EXTENSION_IDENTIFIER } from './constants';
 
-/* eslint-disable */
-export enum DeepLErrorCodes {
-  BAD_REQUEST = 400,
-  AUTHORIZATION_FAILED = 403,
-  NOT_FOUND = 404,
-  REQUEST_SIZE_EXCEEDED = 413,
-  URL_TOO_LONG = 414,
-  TOO_MANY_REQUEST_4XX = 429,
-  CHARACTER_LIMIT_REACHED = 456,
-  INTERNAL_SERVER_ERROR = 500,
-  RESOURCE_UNAVAILABLE = 503,
-  TOO_MANY_REQUEST_5XX = 529,
-}
-/* eslint-enable */
+const cache = {
+  targetLanguages: [] as readonly Language[],
+  sourceLanguages: [] as readonly Language[],
+};
 
-export class DeepLException extends Error {
-  public readonly code: DeepLErrorCodes;
+const createTranslator = (apiKey: string) => {
+  const extension = vscode.extensions.getExtension(EXTENSION_IDENTIFIER)?.packageJSON;
+  const appName = extension?.name;
+  const appVersion = extension?.version;
 
-  constructor(code: DeepLErrorCodes) {
-    super();
-    this.code = code;
-  }
-
-  public static createFromStatusCodeAndMessage(code: number, message: string) {
-    const exception = new DeepLException(code);
-    exception.name = DeepLException.name;
-    switch (code) {
-      case DeepLErrorCodes.AUTHORIZATION_FAILED:
-        exception.message = "Authentication failed. Please check your DeepL API key. You may be using the DeepL Pro API by mistake.";
-        break;
-    
-      case DeepLErrorCodes.REQUEST_SIZE_EXCEEDED:
-        exception.message = "Please try again with a shorter text";
-        break;
-  
-      case DeepLErrorCodes.TOO_MANY_REQUEST_4XX:
-      case DeepLErrorCodes.TOO_MANY_REQUEST_5XX:
-        exception.message = "You have done too many translations recently. Please try again later.";
-        break;
-  
-      case DeepLErrorCodes.CHARACTER_LIMIT_REACHED:
-        exception.message = "You have reached the maximum character limit. You can see your usage [here](https://www.deepl.com/pro-account/usage)";
-        break;
-      
-      default:
-        exception.message = "Unfortunately, the DeepL API cannot accept any requests at the moment. Please try again later. (" + message + ")";
-        break;
-    }
-    return exception;
-  }
-}
-
-type ErrorHandler = (e: DeepLException) => void;
-
-const http = axios.create();
-const errorHandlers: ErrorHandler[] = [];
-
-http.interceptors.request.use((config) => {
-  config.baseURL = isFreeAccountAuthKey(state.apiKey!)
-    ? 'https://api-free.deepl.com'
-    : 'https://api.deepl.com';
-
-  if (!config.params) {
-    config.params = {};
-  }
-
-  config.headers.Authorization = `DeepL-Auth-Key ${state.apiKey}`;
-  
-  if (config.url!.includes('translate')) {
-    config.params.split_sentences = state.splitSentences;
-    config.params.preserve_formatting = state.preserveFormatting ? "1" : "0";
-    
-    if (config.params.source_lang) {
-      config.params.glossary_id = state.glossaryId;
-    }
-  
-    const formalityAllowed: string[] = state.languages.target
-      .filter(x => x.supports_formality)
-      .map(x => x.language);
-    if (config.params.target_lang && formalityAllowed.includes(config.params.target_lang.toUpperCase())) {
-      config.params.formality = state.formality;
-    }
-    
-    if (state.tagHandling !== 'off') {
-      config.params.tag_handling = state.tagHandling;
-      config.params.ignore_tags = state.ignoreTags;
-      config.params.splitting_tags = state.splittingTags;
-      config.params.non_splitting_tags = state.nonSplittingTags;
-    }
-  }
-
-  return config;
-});
-
-http.interceptors.response.use( 
-  res => res,
-  e => {
-    if (!e.response) {
-      throw e;
-    }
-
-    const exception = DeepLException.createFromStatusCodeAndMessage(e.response.status, e.response.data.message);
-    for (const handler of errorHandlers) {
-      handler(exception);
-    }
-    throw exception;
-  }
-);
-
-export async function translate(text: string, targetLanguage: string, sourceLanguage?: string): Promise<Translation[]> {
-  const response = await http.post('/v2/translate', null, {
-    /* eslint-disable */
-    params: {
-      text: text,
-      target_lang: targetLanguage,
-      source_lang: sourceLanguage
-    }
-    /* eslint-enable */
+  return new Translator(apiKey, {
+    appInfo: {
+      appName: appName,
+      appVersion: appVersion
+    },
+    sendPlatformInfo: false
   });
+};
 
-  return response.data.translations as Translation[];
-} 
-
-export async function languages(type: LanguageType = 'source'): Promise<Language[]> {
-  const response = await http.get('/v2/languages', { params: { type } });
-  return response.data as Language[];
+export function translate<T extends string | string[]>(texts: T, sourceLang: SourceLanguageCode | null, targetLang: TargetLanguageCode): Promise<T extends string ? TextResult : TextResult[]> {
+  const translator = createTranslator(state.apiKey!);
+  return translator.translateText(
+    texts,
+    sourceLang ?? null,
+    targetLang,
+    {
+      formality: state.formality || undefined,
+      glossary: state.glossaryId || undefined,
+      ignoreTags: state.ignoreTags || undefined,
+      nonSplittingTags: state.nonSplittingTags || undefined,
+      splittingTags: state.splittingTags || undefined,
+      preserveFormatting: state.preserveFormatting || undefined,
+      splitSentences: state.splitSentences || undefined,
+      tagHandling: state.tagHandling || undefined
+    }
+  );
 }
 
-export const addErrorHandler = (handler: ErrorHandler) => errorHandlers.push(handler);
+export async function getTargetLanguages() {
+  if (cache.targetLanguages.length > 0) {
+    return cache.targetLanguages;
+  }
+
+  const translator = createTranslator(state.apiKey!);
+  const languages = await translator.getTargetLanguages();
+  cache.targetLanguages = languages;
+  return languages;
+}
+
+export async function getSourceLanguages() {
+  if (cache.sourceLanguages.length > 0) {
+    return cache.sourceLanguages;
+  }
+
+  const translator = createTranslator(state.apiKey!);
+  const languages = await translator.getSourceLanguages();
+  cache.sourceLanguages = languages;
+  return languages;
+}

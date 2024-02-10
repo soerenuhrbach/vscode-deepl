@@ -1,20 +1,18 @@
-import * as deepl from './deepl';
 import * as vscode from 'vscode';
 import { setup } from './state';
 import { createStatusBarItem } from './status-bar';
 import { configureSettings, translate, translateFromTo, translateTo, translateBelow } from './commands';
+import { COMMAND_CONFIGURE, COMMAND_TRANSLATE, COMMAND_TRANSLATE_BELOW, COMMAND_TRANSLATE_FROM_TO, COMMAND_TRANSLATE_TO } from './constants';
 
 export async function activate(context: vscode.ExtensionContext) {
-  deepl.addErrorHandler(e => vscode.window.showErrorMessage(e.message));
-
   await setup(context);
 
   context.subscriptions.push(createStatusBarItem());	
-  context.subscriptions.push(vscode.commands.registerCommand('deepl.configure', configureSettings));
-  context.subscriptions.push(vscode.commands.registerCommand('deepl.translate', translate));
-  context.subscriptions.push(vscode.commands.registerCommand('deepl.translateTo', translateTo));
-  context.subscriptions.push(vscode.commands.registerCommand('deepl.translateFromTo', translateFromTo));
-  context.subscriptions.push(vscode.commands.registerCommand('deepl.translateBelow', translateBelow));
+  context.subscriptions.push(vscode.commands.registerCommand(COMMAND_CONFIGURE, configureSettings));
+  context.subscriptions.push(vscode.commands.registerCommand(COMMAND_TRANSLATE, translate));
+  context.subscriptions.push(vscode.commands.registerCommand(COMMAND_TRANSLATE_TO, translateTo));
+  context.subscriptions.push(vscode.commands.registerCommand(COMMAND_TRANSLATE_FROM_TO, translateFromTo));
+  context.subscriptions.push(vscode.commands.registerCommand(COMMAND_TRANSLATE_BELOW, translateBelow));
 }
 
 export function deactivate() {}
