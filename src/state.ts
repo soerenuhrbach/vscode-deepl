@@ -77,10 +77,20 @@ const migrateApiKeyFromConfigToSecrets = async (config: vscode.WorkspaceConfigur
   debug.write('Moved api key from configuration to secret store.');
 };
 
-// TODO: migrate workspace state for target language to new keys
+const migrateWorkspaceStates = async (context: vscode.ExtensionContext) => {
+  const sourceLanguageToMigrate = context.workspaceState.get<string>('deepl:sourceLanguage');
+  if (sourceLanguageToMigrate) {
+    context.workspaceState.update(WORKSPACE_SOURCE_LANGUAGE, sourceLanguageToMigrate);
+    context.workspaceState.update('deepl:sourceLanguage', undefined);
+    debug.write('Moved source language to new workspace state key');
+  }
 
-const migrateWorkspaceStates = async (config: vscode.WorkspaceConfiguration, context: vscode.ExtensionContext) => {
-
+  const targetLanguageToMigrate = context.workspaceState.get<string>('deepl:targetLanguage');
+  if (targetLanguageToMigrate) {
+    context.workspaceState.update(WORKSPACE_TARGET_LANGUAGE, sourceLanguageToMigrate);
+    context.workspaceState.update('deepl:targetLanguage', undefined);
+    debug.write('Moved target language to new workspace state key');
+  }
 };
 
 export async function setup(context: vscode.ExtensionContext) {
@@ -92,6 +102,7 @@ export async function setup(context: vscode.ExtensionContext) {
 
   const config = vscode.workspace.getConfiguration();
 
+  await migrateWorkspaceStates(context);
   await migrateApiKeyFromConfigToSecrets(config, context);
   await loadExtensionState(config, context);
 
