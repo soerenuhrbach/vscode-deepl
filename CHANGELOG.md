@@ -4,6 +4,12 @@ All notable changes to the "vscode-deepl" extension will be documented in this f
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+### 1.0.12
+
+- Use official 'deepl-node' package to interact with the DeepL api.
+- API keys will no longer be stored in the vscode configuration. They will be stored in the Secret Store to make sure, that the api key cant be accessed by 3rd party extensions.
+
+### 1.0.11
 ### 1.0.10
 ### 1.0.9
 

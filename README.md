@@ -36,15 +36,11 @@ The currently selected target language is displayed in the status bar. By clicki
 In order to use this extension, you need a DeepL API key.
 To get an API key, you need to create an account [here](https://www.deepl.com/pro).
 After you have created an account, you will find your API key [here](https://www.deepl.com/pro-account/plan).
-You can store the API key via the following settings.
+You will be asked to enter your api key, by using your first translation.
 
 ## Extension Settings
 
 This extension contributes the following settings:
-
-* `deepl.apiKey`: The key is used to authenticate with the DeepL API. [See offical documentation](https://www.deepl.com/docs-api/accessing-the-api/authentication/)
-
-For this extension to work, the above settings must be made.
 
 Optional settings:
 
@@ -69,6 +65,11 @@ The texts are translated via the online service of [DeepL](https://www.deepl.com
 Dont use this extension if you dont agree with their privacy policy!
 
 ## Release Notes
+
+### 1.0.12
+
+- Use official 'deepl-node' package to interact with the DeepL api.
+- API keys will no longer be stored in the vscode configuration. They will be stored in the Secret Store to make sure, that the api key cant be accessed by 3rd party extensions.
 
 ### 1.0.11
 ### 1.0.10
