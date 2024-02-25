@@ -1,58 +1,96 @@
 import * as vscode from 'vscode';
-import * as debug from './debug';
 import * as deepl from './deepl';
-import { ExtensionState } from './types';
+import * as debug from './debug';
+import type { ExtensionState } from './types';
 import { reactive, effect, ref } from '@vue/reactivity';
 import { getDefaultSourceLanguage, getDefaultTargetLanguage } from './helper';
+import { 
+  DEEPL_CONFIGURATION_SECTION,
+  CONFIG_API_KEY,
+  CONFIG_FORMALITY,
+  CONFIG_IGNORE_TAGS,
+  CONFIG_TAG_HANDLING,
+  CONFIG_SPLITTING_TAGS,
+  CONFIG_SPLIT_SENTENCES,
+  CONFIG_NON_SPLITTING_TAGS,
+  CONFIG_PRESERVE_FORMATTING,
+  CONFIG_GLOSSARY_ID,
+  WORKSPACE_TARGET_LANGUAGE,
+  WORKSPACE_SOURCE_LANGUAGE
+} from './constants';
+import { SourceLanguageCode, TargetLanguageCode } from 'deepl-node';
 
 const initialized = ref(false);
 
 export const state = reactive<ExtensionState>({
-  targetLanguage: null,
-  sourceLanguage: null,
-  apiKey: null,
-  tagHandling: "off",
-  ignoreTags: "",
-  nonSplittingTags: "",
-  splittingTags: "",
-  preserveFormatting: false,
-  formality: "default",
-  splitSentences: "1",
-  languages: {
-    source: [],
-    target: []
-  },
-  glossaryId: ""
+  apiKey: undefined,
+  targetLanguage: undefined,
+  sourceLanguage: undefined,
+  tagHandling: undefined,
+  ignoreTags: undefined,
+  nonSplittingTags: undefined,
+  splittingTags: undefined,
+  preserveFormatting: undefined,
+  formality: undefined,
+  splitSentences: undefined,
+  glossaryId: undefined
 });
 
-const fillStateFromConfig = async (config: vscode.WorkspaceConfiguration, context: vscode.ExtensionContext) => {
-  state.apiKey = config.get('apiKey') ?? null;
+const loadExtensionState = async (config: vscode.WorkspaceConfiguration, context: vscode.ExtensionContext) => {
+  debug.write('Loading extension state...');
+  state.apiKey = await context.secrets.get(CONFIG_API_KEY);
 
-  if (state.languages.source.length < 1 && !!state.apiKey) {
-    state.languages.source = await deepl.languages('source');
-  }
-  if (state.languages.target.length < 1 && !!state.apiKey) {
-    state.languages.target = await deepl.languages('target');
-  }
+  const sourceLanguages = await deepl.getSourceLanguages();
+  const targetLanguages = await deepl.getTargetLanguages();
 
-  state.formality = config.get('formality') ?? "default";
-  state.ignoreTags = config.get('ignoreTags') ?? "";
-  state.tagHandling = config.get('tagHandling') ?? "off";
-  state.splittingTags = config.get('splittingTags') ?? "";
-  state.splitSentences = config.get('splitSentences') ?? "1";
-  state.nonSplittingTags = config.get('nonSplittingTags') ?? "";
-  state.preserveFormatting = config.get('preserveFormatting') ?? false;
-  state.glossaryId = config.get('glossaryId') ?? "";
+  state.formality = config.get(CONFIG_FORMALITY) ?? undefined;
+  state.glossaryId = config.get(CONFIG_GLOSSARY_ID) ?? undefined;
+  state.ignoreTags = config.get(CONFIG_IGNORE_TAGS) ?? undefined;
+  state.tagHandling = config.get(CONFIG_TAG_HANDLING) ?? undefined;
+  state.splittingTags = config.get(CONFIG_SPLITTING_TAGS) ?? undefined;
+  state.splitSentences = config.get(CONFIG_SPLIT_SENTENCES) ?? undefined;
+  state.nonSplittingTags = config.get(CONFIG_NON_SPLITTING_TAGS) ?? undefined;
+  state.preserveFormatting = config.get(CONFIG_PRESERVE_FORMATTING) ?? undefined;
 
-  const targetLanguage = context.workspaceState.get<string>('deepl:targetLanguage') ?? getDefaultTargetLanguage(config);
-  state.targetLanguage = targetLanguage && state.languages.target.map(x => x.language.toLowerCase()).includes(targetLanguage.toLowerCase())
+  const targetLanguage = context.workspaceState.get<TargetLanguageCode>(WORKSPACE_TARGET_LANGUAGE) ?? getDefaultTargetLanguage(config);
+  state.targetLanguage = targetLanguage && targetLanguages.map(x => x.code.toLowerCase()).includes(targetLanguage.toLowerCase())
     ? targetLanguage
-    : null;
+    : undefined;
 
-  const sourceLanguage = context.workspaceState.get<string>('deepl:sourceLanguage') ?? getDefaultSourceLanguage(config);
-  state.sourceLanguage = sourceLanguage && state.languages.source.map(x => x.language.toLowerCase()).includes(sourceLanguage.toLowerCase())
+  const sourceLanguage = context.workspaceState.get<SourceLanguageCode>(WORKSPACE_SOURCE_LANGUAGE) ?? getDefaultSourceLanguage(config);
+  state.sourceLanguage = sourceLanguage && sourceLanguages.map(x => x.code.toLowerCase()).includes(sourceLanguage.toLowerCase())
     ? sourceLanguage
-    : null;
+    : undefined;
+
+  debug.write(`Loaded extension state:`);
+  debug.write(JSON.stringify(state, null, 2));
+};
+
+const migrateApiKeyFromConfigToSecrets = async (config: vscode.WorkspaceConfiguration, context: vscode.ExtensionContext) => {
+  const apiKeyFromConfiguration = config.get<string>(CONFIG_API_KEY);
+  if (!apiKeyFromConfiguration) {
+    return;
+  }
+
+  await context.secrets.store(CONFIG_API_KEY, apiKeyFromConfiguration);
+  config.update(CONFIG_API_KEY, apiKeyFromConfiguration, vscode.ConfigurationTarget.Global);
+  debug.write('Moved api key from configuration to secret store.');
+};
+
+const migrateWorkspaceStates = async (context: vscode.ExtensionContext) => {
+  const sourceLanguageToMigrate = context.workspaceState.get<string>('deepl:sourceLanguage');
+  if (sourceLanguageToMigrate) {
+    context.workspaceState.update(WORKSPACE_SOURCE_LANGUAGE, sourceLanguageToMigrate);
+    context.workspaceState.update('deepl:sourceLanguage', undefined);
+    debug.write('Moved source language to new workspace state key');
+  }
+
+  const targetLanguageToMigrate = context.workspaceState.get<string>('deepl:targetLanguage');
+  if (targetLanguageToMigrate) {
+    context.workspaceState.update(WORKSPACE_TARGET_LANGUAGE, sourceLanguageToMigrate);
+    context.workspaceState.update('deepl:targetLanguage', undefined);
+    debug.write('Moved target language to new workspace state key');
+  }
 };
 
 export async function setup(context: vscode.ExtensionContext) {
@@ -62,39 +100,41 @@ export async function setup(context: vscode.ExtensionContext) {
 
   initialized.value = true;
 
-  const config = vscode.workspace.getConfiguration('deepl');
+  const config = vscode.workspace.getConfiguration();
 
-  await fillStateFromConfig(config, context);
+  await migrateWorkspaceStates(context);
+  await migrateApiKeyFromConfigToSecrets(config, context);
+  await loadExtensionState(config, context);
 
-  debug.write(`Initialized extension using state:`);
-  debug.write(JSON.stringify(state, null, 2));
+  effect(() => state.apiKey ? context.secrets.store(CONFIG_API_KEY, state.apiKey) : context.secrets.delete(CONFIG_API_KEY));
+  effect(() => config.update(CONFIG_FORMALITY, state.formality, vscode.ConfigurationTarget.Global));
+  effect(() => config.update(CONFIG_IGNORE_TAGS, state.ignoreTags, vscode.ConfigurationTarget.Global));
+  effect(() => config.update(CONFIG_TAG_HANDLING, state.tagHandling, vscode.ConfigurationTarget.Global));
+  effect(() => config.update(CONFIG_SPLITTING_TAGS, state.splittingTags, vscode.ConfigurationTarget.Global));
+  effect(() => config.update(CONFIG_NON_SPLITTING_TAGS, state.nonSplittingTags, vscode.ConfigurationTarget.Global));
+  effect(() => config.update(CONFIG_SPLIT_SENTENCES, state.splitSentences, vscode.ConfigurationTarget.Global));
+  effect(() => config.update(CONFIG_PRESERVE_FORMATTING, state.preserveFormatting, vscode.ConfigurationTarget.Global));
+  effect(() => config.update(CONFIG_GLOSSARY_ID, state.glossaryId, vscode.ConfigurationTarget.Global));
+  effect(() => context.workspaceState.update(WORKSPACE_TARGET_LANGUAGE, state.targetLanguage));
+  effect(() => context.workspaceState.update(WORKSPACE_SOURCE_LANGUAGE, state.sourceLanguage));
 
-  effect(() => config.update('apiKey', state.apiKey, vscode.ConfigurationTarget.Global));
-  effect(() => config.update('formality', state.formality, vscode.ConfigurationTarget.Global));
-  effect(() => config.update('ignoreTags', state.ignoreTags, vscode.ConfigurationTarget.Global));
-  effect(() => config.update('tagHandling', state.tagHandling, vscode.ConfigurationTarget.Global));
-  effect(() => config.update('splittingTags', state.splittingTags, vscode.ConfigurationTarget.Global));
-  effect(() => config.update('nonSplittingTags', state.nonSplittingTags, vscode.ConfigurationTarget.Global));
-  effect(() => config.update('splitSentences', state.splitSentences, vscode.ConfigurationTarget.Global));
-  effect(() => config.update('preserveFormatting', state.preserveFormatting, vscode.ConfigurationTarget.Global));
-  effect(() => config.update('glossaryId', state.glossaryId, vscode.ConfigurationTarget.Global));
-  effect(() => context.workspaceState.update('deepl:targetLanguage', state.targetLanguage));
-  effect(() => context.workspaceState.update('deepl:sourceLanguage', state.sourceLanguage));
-
-  const configurationChangeListener = vscode.workspace.onDidChangeConfiguration(e => {
-    if (!e.affectsConfiguration('deepl')) {
+  const secretChangeListener = context.secrets.onDidChange((e) => {
+    if (e.key !== CONFIG_API_KEY) {
       return;
     }
 
-    debug.write(`Extension configuration has changed! Updating extension state...`);
-
-    const config = vscode.workspace.getConfiguration('deepl');
-
-    fillStateFromConfig(config, context);
-
-    debug.write(`Updated extension state to:`);
-    debug.write(JSON.stringify(state, null, 2));
+    debug.write(`Secret (${CONFIG_API_KEY}) has been changed!`);
+    loadExtensionState(config, context);
   });
 
-  context.subscriptions.push(configurationChangeListener);
+  const configurationChangeListener = vscode.workspace.onDidChangeConfiguration(e => {
+    if (!e.affectsConfiguration(DEEPL_CONFIGURATION_SECTION)) {
+      return;
+    }
+
+    debug.write(`Extension configuration has been changed!`);
+    loadExtensionState(config, context);
+  });
+
+  context.subscriptions.push(secretChangeListener, configurationChangeListener);
 }

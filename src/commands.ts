@@ -1,14 +1,14 @@
-import * as deepl from './deepl';
 import * as debug from './debug';
+import * as deepl from './deepl';
 import * as vscode from 'vscode';
 import { state } from './state';
 import { showMessageWithTimeout } from './vscode';
 import { showApiKeyInput, showSourceLanguageInput, showTargetLanguageInput } from "./inputs";
-import { TranslateCommandParam, TranslateParam } from './types';
 import { getDefaultSourceLanguage, getDefaultTargetLanguage } from './helper';
+import { SourceLanguageCode, TargetLanguageCode } from 'deepl-node';
 
-function translateSelections(selections: vscode.Selection[], translateParam: TranslateParam): Thenable<void> {
-  const { targetLang, sourceLang, below } = translateParam;
+function translateSelections(selections: vscode.Selection[], request: { targetLang: TargetLanguageCode, sourceLang: SourceLanguageCode | null, translateBelow: boolean }): Thenable<void> {
+  const { targetLang, sourceLang, translateBelow } = request; 
   return vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'Translating' }, async (progress) => {
     const increment = 100 / 2 / selections.length;
 
@@ -25,12 +25,15 @@ function translateSelections(selections: vscode.Selection[], translateParam: Tra
             ? `Start translating '${text}' to '${targetLang}'`
             : `Start translating '${text}' from '${sourceLang}' to '${targetLang}'`
         );
-        const translations = await deepl.translate(text, targetLang, sourceLang).catch(() => []);
-        const result = translations.length > 0 ? translations[0] : null;
+        const result = await deepl.translate(
+          text, 
+          sourceLang ?? null, 
+          targetLang, 
+        );
         progress.report({ increment });
         debug.write(
           result
-            ? `Successfully translated '${text}' to '${result.text}'! (Source: '${result.detected_source_language}', Target: '${targetLang}')`
+            ? `Successfully translated '${text}' to '${result.text}'! (Source: '${result.detectedSourceLang}', Target: '${targetLang}')`
             : `'${text}' could be translated to '${targetLang}! (Reason: DeepL-API returned no translation)'`
         );
         return result;
@@ -45,7 +48,7 @@ function translateSelections(selections: vscode.Selection[], translateParam: Tra
         if (selection && translation) {
           let replacement = translation.text;
 
-          if (below) {
+          if (translateBelow) {
             const originalText = vscode.window.activeTextEditor?.document.getText(selection);
             replacement = `${originalText}\n${translation.text}`;
           }
@@ -61,8 +64,8 @@ function translateSelections(selections: vscode.Selection[], translateParam: Tra
   });
 }
 
-function createTranslateCommand(param: TranslateCommandParam) {
-  const { askForTargetLang, askForSourceLang, below } = param;
+function createTranslateCommand(request: { askForTargetLang: boolean, askForSourceLang: boolean, translateBelow: boolean }) {
+  const { askForTargetLang, askForSourceLang, translateBelow } = request;
   return async function () {
     if (!state.apiKey) {
       await configureSettings();
@@ -89,7 +92,7 @@ function createTranslateCommand(param: TranslateCommandParam) {
     }
 
     if (state.targetLanguage === state.sourceLanguage) {
-      state.sourceLanguage = null;
+      state.sourceLanguage = undefined;
     }
 
     const selections = vscode.window.activeTextEditor?.selections?.filter(selection => !selection.isEmpty);
@@ -97,19 +100,21 @@ function createTranslateCommand(param: TranslateCommandParam) {
       return;
     }
 
-    const translateParam: TranslateParam = {
-      targetLang: state.targetLanguage,
-      sourceLang: sourceLang ?? undefined,
-      below
-    };
-    translateSelections(selections, translateParam);
+    await translateSelections(
+      selections, 
+      {
+        targetLang: state.targetLanguage,
+        sourceLang: sourceLang ?? null,
+        translateBelow,
+      }
+    );
   };
 }
 
-export const translate = createTranslateCommand({ askForTargetLang: false, askForSourceLang: false, below: false });
-export const translateTo = createTranslateCommand({ askForTargetLang: true, askForSourceLang: false, below: false });
-export const translateFromTo = createTranslateCommand({ askForTargetLang: true, askForSourceLang: true, below: false });
-export const translateBelow = createTranslateCommand({ askForTargetLang: false, askForSourceLang: false, below: true });
+export const translate = createTranslateCommand({ askForTargetLang: false, askForSourceLang: false, translateBelow: false });
+export const translateTo = createTranslateCommand({ askForTargetLang: true, askForSourceLang: false, translateBelow: false });
+export const translateFromTo = createTranslateCommand({ askForTargetLang: true, askForSourceLang: true, translateBelow: false });
+export const translateBelow = createTranslateCommand({ askForTargetLang: false, askForSourceLang: false, translateBelow: true });
 export const configureSettings = async () => {
   state.apiKey = await showApiKeyInput();
   if (!state.apiKey) {
