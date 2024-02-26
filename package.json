@@ -2,7 +2,7 @@
 	"name": "vscode-deepl",
 	"displayName": "Translate with DeepL for Visual Studio Code",
 	"description": "Easily translate into more than 25 languages directly from your visual studio code editor using DeepL.",
-	"version": "1.0.12",
+	"version": "1.0.13",
 	"keywords": [
 		"DeepL",
 		"Translate",
@@ -42,12 +42,6 @@
 			{
 				"title": "DeepL",
 				"properties": {
-					"deepl.apiKey": {
-						"type": "string",
-						"default": "",
-						"deprecationMessage": "For security reasons the api key will no longer be stored in the configuration. Configured api keys will be automatically migrated to the vscode secret store and removed from the config. The config option will be removed in future releases!",
-						"markdownDescription": "The key is used to authenticate with the DeepL API. [See offical documentation](https://www.deepl.com/docs-api/accessing-the-api/authentication/)"
-					},
 					"deepl.formality": {
 						"type": "string",
 						"default": "default",
@@ -198,6 +192,10 @@
 				"command": "deepl.translateBelow",
 				"title": "DeepL: Translate from ... to ... below the original text",
 				"shortTitle": "Translate below the original ..."
+			},
+			{
+				"command": "deepl.configure",
+				"title": "DeepL: Configure extension"
 			}
 		],
 		"menus": {
