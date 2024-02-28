@@ -66,6 +66,10 @@ Dont use this extension if you dont agree with their privacy policy!
 
 ## Release Notes
 
+### 1.0.14
+
+- Minor bug fixes
+
 ### 1.0.13
 
 - Add missing vscode command to configure the extension (f.e. the api key)

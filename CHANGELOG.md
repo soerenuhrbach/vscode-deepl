@@ -4,6 +4,10 @@ All notable changes to the "vscode-deepl" extension will be documented in this f
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+### 1.0.14
+
+- Minor bug fixes
+
 ### 1.0.13
 
 - Add missing vscode command to configure the extension (f.e. the api key)
