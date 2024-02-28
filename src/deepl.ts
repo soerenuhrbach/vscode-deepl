@@ -42,6 +42,10 @@ export function translate<T extends string | string[]>(texts: T, sourceLang: Sou
 }
 
 export async function getTargetLanguages() {
+  if (!state.apiKey) {
+    return [];
+  }
+
   if (cache.targetLanguages.length > 0) {
     return cache.targetLanguages;
   }
@@ -53,6 +57,10 @@ export async function getTargetLanguages() {
 }
 
 export async function getSourceLanguages() {
+  if (!state.apiKey) {
+    return [];
+  }
+
   if (cache.sourceLanguages.length > 0) {
     return cache.sourceLanguages;
   }

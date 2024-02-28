@@ -42,9 +42,6 @@ const loadExtensionState = async (context: vscode.ExtensionContext) => {
   debug.write('Loading extension state...');
   state.apiKey = await context.secrets.get(CONFIG_API_KEY);
 
-  const sourceLanguages = await deepl.getSourceLanguages();
-  const targetLanguages = await deepl.getTargetLanguages();
-
   state.formality = config.get(CONFIG_FORMALITY) || undefined;
   state.glossaryId = config.get(CONFIG_GLOSSARY_ID) || undefined;
   state.ignoreTags = config.get(CONFIG_IGNORE_TAGS) || undefined;
@@ -54,15 +51,8 @@ const loadExtensionState = async (context: vscode.ExtensionContext) => {
   state.nonSplittingTags = config.get(CONFIG_NON_SPLITTING_TAGS) || undefined;
   state.preserveFormatting = config.get(CONFIG_PRESERVE_FORMATTING) || undefined;
 
-  const targetLanguage = context.workspaceState.get<TargetLanguageCode>(WORKSPACE_TARGET_LANGUAGE) || getDefaultTargetLanguage(config);
-  state.targetLanguage = targetLanguage && targetLanguages.map(x => x.code.toLowerCase()).includes(targetLanguage.toLowerCase())
-    ? targetLanguage
-    : undefined;
-
-  const sourceLanguage = context.workspaceState.get<SourceLanguageCode>(WORKSPACE_SOURCE_LANGUAGE) || getDefaultSourceLanguage(config);
-  state.sourceLanguage = sourceLanguage && sourceLanguages.map(x => x.code.toLowerCase()).includes(sourceLanguage.toLowerCase())
-    ? sourceLanguage
-    : undefined;
+  state.targetLanguage = context.workspaceState.get<TargetLanguageCode>(WORKSPACE_TARGET_LANGUAGE) || getDefaultTargetLanguage(config);
+  state.sourceLanguage = context.workspaceState.get<SourceLanguageCode>(WORKSPACE_SOURCE_LANGUAGE) || getDefaultSourceLanguage(config);
 
   debug.write(`Loaded extension state:`);
   debug.write(JSON.stringify(state, null, 2));
@@ -106,6 +96,16 @@ export async function setup(context: vscode.ExtensionContext) {
 
   await migrateWorkspaceStates(context);
   await migrateApiKeyFromConfigToSecrets(config, context);
+
+  effect(async () => {
+    if (state.apiKey) {
+      await Promise.all([
+        deepl.getSourceLanguages(),
+        deepl.getTargetLanguages()
+      ]);
+    }
+  });
+
   await loadExtensionState(context);
 
   effect(() => state.apiKey ? context.secrets.store(CONFIG_API_KEY, state.apiKey) : context.secrets.delete(CONFIG_API_KEY));
