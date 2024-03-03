@@ -12,4 +12,11 @@ export interface ExtensionState {
   splitSentences?: SentenceSplittingMode,
   preserveFormatting?: boolean,
   glossaryId?: GlossaryId
+  translationMode: TranslationMode
+}
+
+export enum TranslationMode {
+  Replace = "Replace",
+  InsertLineBelow = "InsertLineBelow",
+  InsertLineAbove = "InsertLineAbove"
 }

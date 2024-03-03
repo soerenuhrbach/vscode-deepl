@@ -2,7 +2,7 @@
 	"name": "vscode-deepl",
 	"displayName": "Translate with DeepL for Visual Studio Code",
 	"description": "Easily translate into more than 25 languages directly from your visual studio code editor using DeepL.",
-	"version": "1.0.14",
+	"version": "1.1.0",
 	"keywords": [
 		"DeepL",
 		"Translate",
@@ -42,6 +42,20 @@
 			{
 				"title": "DeepL",
 				"properties": {
+					"deepl.translationMode": {
+						"type": "string",
+						"default": "Replace",
+						"enum": [
+							"Replace",
+							"InsertLineBelow",
+							"InsertLineAbove"
+						],
+						"enumDescriptions": [
+							"Replaces the text selected with the translation result",
+							"The translation result will be inserted in a new line below the selected text",
+							"The translation result will be inserted in a new line above the selected"
+						]
+					},
 					"deepl.formality": {
 						"type": "string",
 						"default": "default",
@@ -189,13 +203,12 @@
 				"shortTitle": "Translate from ..."
 			},
 			{
-				"command": "deepl.translateBelow",
-				"title": "DeepL: Translate from ... to ... below the original text",
-				"shortTitle": "Translate below the original ..."
-			},
-			{
 				"command": "deepl.configure",
 				"title": "DeepL: Configure extension"
+			},
+			{
+				"command": "deepl.translateAndPasteFromClipboard",
+				"title": "DeepL: Translate and paste from clipboard"
 			}
 		],
 		"menus": {
@@ -213,11 +226,6 @@
 				{
 					"when": "editorHasSelection && !isInDiffEditor",
 					"command": "deepl.translateFromTo",
-					"group": "deepl@3"
-				},
-				{
-					"when": "editorHasSelection && !isInDiffEditor",
-					"command": "deepl.translateBelow",
 					"group": "deepl@3"
 				}
 			]
@@ -240,10 +248,10 @@
 				"mac": "cmd+shift+alt+t"
 			},
 			{
-				"command": "deepl.translateBelow",
-				"when": "editorHasSelection && !isInDiffEditor",
-				"key": "ctrl+alt+t",
-				"mac": "cmd+alt+t"
+				"command": "deepl.translateAndPasteFromClipboard",
+				"when": "!isInDiffEditor",
+				"key": "ctrl+shift+v",
+				"mac": "cmd+shift+v"
 			}
 		]
 	},

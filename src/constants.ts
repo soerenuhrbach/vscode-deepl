@@ -11,6 +11,7 @@ export const CONFIG_PRESERVE_FORMATTING = `${DEEPL_CONFIGURATION_SECTION}.preser
 export const CONFIG_GLOSSARY_ID = `${DEEPL_CONFIGURATION_SECTION}.glossaryId`;
 export const CONFIG_DEFAULT_TARGET_LANGUAGE = `${DEEPL_CONFIGURATION_SECTION}.defaultTargetLanguage`;
 export const CONFIG_DEFAULT_SOURCE_LANGUAGE = `${DEEPL_CONFIGURATION_SECTION}.defaultSourceLanguage`;
+export const CONFIG_TRANSLATION_MODE = `${DEEPL_CONFIGURATION_SECTION}.translationMode`;
 export const WORKSPACE_TARGET_LANGUAGE = `${DEEPL_CONFIGURATION_SECTION}.targetLanguage`;
 export const WORKSPACE_SOURCE_LANGUAGE = `${DEEPL_CONFIGURATION_SECTION}.sourceLanguage`;
 
@@ -20,4 +21,5 @@ export const COMMAND_CONFIGURE = 'deepl.configure';
 export const COMMAND_TRANSLATE = 'deepl.translate';
 export const COMMAND_TRANSLATE_TO = 'deepl.translateTo';
 export const COMMAND_TRANSLATE_FROM_TO = 'deepl.translateFromTo';
-export const COMMAND_TRANSLATE_BELOW = 'deepl.translateBelow';
+export const COMMAND_TRANSLATE_AND_PASTE_FROM_CLIPBOARD = 'deepl.translateAndPasteFromClipboard';
+export const COMMAND_SET_TARGET_LANGAUGE = 'deepl.setTargetLanguage';
