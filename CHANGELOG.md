@@ -4,6 +4,10 @@ All notable changes to the "vscode-deepl" extension will be documented in this f
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+### 1.1.1 
+
+- Added command "DeepL: Duplicate and translate" which duplicates and translates the selected text.
+
 ### 1.1.0
 
 - Removed the command "Translate from ... to ... below original text"

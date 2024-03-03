@@ -13,7 +13,7 @@ type GetTargetAndSourceLanguageRequest = {
   forceSourceLanguagePrompt: boolean;
 };
 
-async function getTargetAndSourceLanguage (request: GetTargetAndSourceLanguageRequest): Promise<{ targetLanguage: TargetLanguageCode, sourceLanguage: SourceLanguageCode | undefined }> {
+async function getTargetAndSourceLanguage (request: GetTargetAndSourceLanguageRequest = { forceSourceLanguagePrompt: false, forceTargetLanguagePrompt: false }): Promise<{ targetLanguage: TargetLanguageCode, sourceLanguage: SourceLanguageCode | undefined }> {
   let targetLanguage = state.targetLanguage ?? getDefaultTargetLanguage();
   if (request.forceTargetLanguagePrompt || !targetLanguage) {
     targetLanguage = await showTargetLanguagePrompt() ?? state.targetLanguage ?? getDefaultTargetLanguage();
@@ -68,18 +68,8 @@ function translateSelections(selections: vscode.Selection[], request: { targetLa
           return null;
         }
 
-        debug.write(
-          sourceLanguage
-            ? `Start translating '${text}' to '${targetLanguage}'`
-            : `Start translating '${text}' from '${sourceLanguage}' to '${targetLanguage}'`
-        );
         const result = await deepl.translate(text, sourceLanguage, targetLanguage);
         progress.report({ increment });
-        debug.write(
-          result
-            ? `Successfully translated '${text}' to '${result.text}'! (Source: '${result.detectedSourceLang}', Target: '${targetLanguage}')`
-            : `'${text}' could not be translated to '${targetLanguage}! (Reason: DeepL-API returned no translation)'`
-        );
         return result;
       })
     );
@@ -122,7 +112,9 @@ function createTranslateSelectionsCommand(request: GetTargetAndSourceLanguageReq
       await configureSettings();
     }
 
-    const selections = vscode.window.activeTextEditor?.selections?.filter(selection => !selection.isEmpty);
+    const selections = vscode.window.activeTextEditor
+      ?.selections
+      ?.filter(selection => !selection.isEmpty);
     if (!selections || selections.length === 0) {
       return;
     }
@@ -134,9 +126,71 @@ function createTranslateSelectionsCommand(request: GetTargetAndSourceLanguageReq
 export const setTargetLangauge = async () => state.targetLanguage = await showTargetLanguagePrompt();
 export const configureSettings = async () => state.apiKey = await showApiKeyPrompt();
 
-export const translate = createTranslateSelectionsCommand({ forceTargetLanguagePrompt: false, forceSourceLanguagePrompt: false });
-export const translateTo = createTranslateSelectionsCommand({ forceTargetLanguagePrompt: true, forceSourceLanguagePrompt: false });
-export const translateFromTo = createTranslateSelectionsCommand({ forceTargetLanguagePrompt: true, forceSourceLanguagePrompt: true });
+export const translate = createTranslateSelectionsCommand({ 
+  forceTargetLanguagePrompt: false, 
+  forceSourceLanguagePrompt: false 
+});
+export const translateTo = createTranslateSelectionsCommand({ 
+  forceTargetLanguagePrompt: true, 
+  forceSourceLanguagePrompt: false 
+});
+export const translateFromTo = createTranslateSelectionsCommand({ 
+  forceTargetLanguagePrompt: true, 
+  forceSourceLanguagePrompt: true
+});
+
+export const duplicateAndTranslate = async () => {
+  const editor = vscode.window.activeTextEditor;
+  const selections = editor?.selections;
+  if (!selections || selections.length === 0) {
+    return;
+  }
+
+  const { targetLanguage, sourceLanguage } = await getTargetAndSourceLanguage();
+
+  return displayTranslationNotification(async progress => {
+    const increment = 100 / 2 / selections.length;
+
+    const translationResults = await Promise.all(
+      selections.map(async selection => {
+        const duplicateWholeLine = selection.isEmpty && selection.isSingleLine;
+        const range = duplicateWholeLine
+          ? editor.document.lineAt(selection.start.line).range
+          : new vscode.Range(
+              selection.start.line, 
+              selection.start.character,
+              selection.end.line,
+              selection.end.character
+            );
+        const text = editor.document.getText(range);
+        const result = await deepl.translate(
+          text, 
+          sourceLanguage, 
+          targetLanguage
+        );
+        progress.report({ increment });
+
+        return {
+          text,
+          range,
+          result,
+          duplicateWholeLine
+        };
+      })
+    );
+
+    await editor.edit((editor: vscode.TextEditorEdit) => {
+      for (const translationResult of translationResults) {
+        const replacement = translationResult.duplicateWholeLine
+          ? `${translationResult.text}\n${translationResult.result.text}`
+          : `${translationResult.text}${translationResult.result.text}`;
+
+        editor.replace(translationResult.range, replacement);
+        progress.report({ increment });
+      }
+    });
+  });
+};
 
 export const translateAndPasteFromClipboard = async () => {
   const selections = vscode.window.activeTextEditor?.selections;
@@ -149,14 +203,15 @@ export const translateAndPasteFromClipboard = async () => {
     return;
   }
 
-  const { targetLanguage, sourceLanguage } = await getTargetAndSourceLanguage({
-    forceSourceLanguagePrompt: false,
-    forceTargetLanguagePrompt: false
-  });
+  const { targetLanguage, sourceLanguage } = await getTargetAndSourceLanguage();
 
   return displayTranslationNotification(async (progress) => {
     const increment = 100 / 2 / selections.length;
-    const translatedClipboardText = await deepl.translate(clipboardText, sourceLanguage, targetLanguage);
+    const translatedClipboardText = await deepl.translate(
+      clipboardText, 
+      sourceLanguage, 
+      targetLanguage
+    );
     progress.report({ increment: increment * selections.length });
 
     vscode.window.activeTextEditor?.edit((editor: vscode.TextEditorEdit) => {

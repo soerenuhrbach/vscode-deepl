@@ -67,6 +67,11 @@ const handleTranslationFailure = async <T extends string | string[]>(texts: T, r
 
 export async function translate<T extends string | string[]>(texts: T, sourceLanguage: SourceLanguageCode | undefined, targetLanguage: TargetLanguageCode, retries: number = 1): Promise<T extends string ? TextResult : TextResult[]> {
   const translator = createTranslator(state.apiKey!);
+  debug.write(
+    sourceLanguage
+      ? `Start translating '${texts}' to '${targetLanguage}'`
+      : `Start translating '${texts}' from '${sourceLanguage}' to '${targetLanguage}'`
+  );
   const results = await translator.translateText(
     texts,
     sourceLanguage ?? null,
@@ -82,7 +87,6 @@ export async function translate<T extends string | string[]>(texts: T, sourceLan
       tagHandling: state.tagHandling || undefined
     }
   );
-
   const wasTranslationSuccessful = typeof texts === "string"
     ? (results as TextResult).text !== texts
     : (results as TextResult[]).filter((result, index) => result.text === texts[index]).length === 0;

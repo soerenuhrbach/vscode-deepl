@@ -211,6 +211,11 @@
 				"command": "deepl.translateAndPasteFromClipboard",
 				"title": "DeepL: Translate and paste from clipboard",
 				"shortTitle": "Translate and paste from clipboard"
+			},
+			{
+				"command": "deepl.duplicateAndTranslate",
+				"title": "DeepL: Duplicate and translate",
+				"shortTitle": "Duplicate and translate"
 			}
 		],
 		"menus": {
@@ -254,6 +259,12 @@
 				"when": "!isInDiffEditor",
 				"key": "ctrl+shift+v",
 				"mac": "cmd+shift+v"
+			},
+			{
+				"command": "deepl.duplicateAndTranslate",
+				"when": "!isInDiffEditor",
+				"key": "ctrl+shift+d",
+				"mac": "cmd+shift+d"
 			}
 		]
 	},
