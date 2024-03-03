@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as deepl from './deepl';
 import * as debug from './debug';
-import type { ExtensionState } from './types';
+import { TranslationMode, type ExtensionState } from './types';
 import { reactive, effect, ref } from '@vue/reactivity';
 import { getDefaultSourceLanguage, getDefaultTargetLanguage } from './helper';
 import { 
@@ -16,7 +16,8 @@ import {
   CONFIG_PRESERVE_FORMATTING,
   CONFIG_GLOSSARY_ID,
   WORKSPACE_TARGET_LANGUAGE,
-  WORKSPACE_SOURCE_LANGUAGE
+  WORKSPACE_SOURCE_LANGUAGE,
+  CONFIG_TRANSLATION_MODE
 } from './constants';
 import { SourceLanguageCode, TargetLanguageCode } from 'deepl-node';
 
@@ -33,7 +34,8 @@ export const state = reactive<ExtensionState>({
   preserveFormatting: undefined,
   formality: undefined,
   splitSentences: undefined,
-  glossaryId: undefined
+  glossaryId: undefined,
+  translationMode: TranslationMode.Replace
 });
 
 const loadExtensionState = async (context: vscode.ExtensionContext) => {
@@ -48,6 +50,7 @@ const loadExtensionState = async (context: vscode.ExtensionContext) => {
   state.tagHandling = config.get(CONFIG_TAG_HANDLING) || undefined;
   state.splittingTags = config.get(CONFIG_SPLITTING_TAGS) || undefined;
   state.splitSentences = config.get(CONFIG_SPLIT_SENTENCES) || undefined;
+  state.translationMode = config.get(CONFIG_TRANSLATION_MODE) || TranslationMode.Replace;
   state.nonSplittingTags = config.get(CONFIG_NON_SPLITTING_TAGS) || undefined;
   state.preserveFormatting = config.get(CONFIG_PRESERVE_FORMATTING) || undefined;
 
@@ -117,6 +120,7 @@ export async function setup(context: vscode.ExtensionContext) {
   effect(() => config.update(CONFIG_SPLIT_SENTENCES, state.splitSentences, vscode.ConfigurationTarget.Global));
   effect(() => config.update(CONFIG_PRESERVE_FORMATTING, state.preserveFormatting, vscode.ConfigurationTarget.Global));
   effect(() => config.update(CONFIG_GLOSSARY_ID, state.glossaryId, vscode.ConfigurationTarget.Global));
+  effect(() => config.update(CONFIG_TRANSLATION_MODE, state.translationMode, vscode.ConfigurationTarget.Global));
   effect(() => context.workspaceState.update(WORKSPACE_TARGET_LANGUAGE, state.targetLanguage));
   effect(() => context.workspaceState.update(WORKSPACE_SOURCE_LANGUAGE, state.sourceLanguage));
 

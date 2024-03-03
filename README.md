@@ -17,7 +17,7 @@ The following commands are available to translate texts:
 |DeepL: Translate|alt+t|Translates the selected text into the last used target language 
 |DeepL: Translate to ...|alt+shift+t|Asks for the target language and translates the selected text into the target language
 |DeepL: Translate from ... to ...|alt+ctrl+shift+t|Asks for source and target language and translates the selected text from the source language into the target language
-|DeepL: Translate below the original ...|ctrl+alt+t|Append translated text below the selected text
+|DeepL: Translate and paste from clipboard|ctrl+shift+v|Translates the clipboard content and paste it
 
 The commands are accessible via the command pallette.
 
@@ -53,6 +53,7 @@ Optional settings:
 * `deepl.ignoreTags`: Comma-separated list of XML tags that indicate text not to be translated.
 * `deepl.defaultTargetLanguage`: Specifies the default target language the text should be translated to. The default target language will be overwriten by choosing a different language using the language chooser. (See all available target languages in the [offical documentation](https://www.deepl.com/docs-api/translate-text))
 * `deepl.defaultSourceLanguage`: Specifies the default source language the text should be translated to. The default source language will be overwriten by choosing a different language using the language chooser. (See all available source languages in the [offical documentation](https://www.deepl.com/docs-api/translate-text))
+* `deepl.translationMode`: Whether the selected text should be replaced with the translation result or inserted into a new line below/above
 
 ## Disclaimer
 
@@ -65,6 +66,13 @@ The texts are translated via the online service of [DeepL](https://www.deepl.com
 Dont use this extension if you dont agree with their privacy policy!
 
 ## Release Notes
+
+### 1.1.0
+
+- Removed the command "Translate from ... to ... below original text"
+- Added new configuration `deepl.configuration` to specify whether the selected text should be replaced with the translation result or inserted into a new line below/above
+- Added the command "Deepl: Translate and paste from clipboard" which allows to translate the clipboard content and paste it.
+- Show warning message if translation result equals the original text with actions to resolve this conflict.
 
 ### 1.0.14
 

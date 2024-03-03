@@ -12,4 +12,14 @@ export interface ExtensionState {
   splitSentences?: SentenceSplittingMode,
   preserveFormatting?: boolean,
   glossaryId?: GlossaryId
+  translationMode: TranslationMode
+}
+
+export enum TranslationMode {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  Replace = "Replace",
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  InsertLineBelow = "InsertLineBelow",
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  InsertLineAbove = "InsertLineAbove"
 }

@@ -4,6 +4,13 @@ All notable changes to the "vscode-deepl" extension will be documented in this f
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+### 1.1.0
+
+- Removed the command "Translate from ... to ... below original text"
+- Added new configuration `deepl.configuration` to specify whether the selected text should be replaced with the translation result or inserted into a new line below/above
+- Added the command "Deepl: Translate and paste from clipboard" which allows to translate the clipboard content and paste it.
+- Show warning message if translation result equals the original text with actions to resolve this conflict.
+
 ### 1.0.14
 
 - Minor bug fixes
