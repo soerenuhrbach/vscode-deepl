@@ -19,7 +19,7 @@ async function getTargetAndSourceLanguage (request: GetTargetAndSourceLanguageRe
     targetLanguage = await showTargetLanguagePrompt() ?? state.targetLanguage ?? getDefaultTargetLanguage();
   }
   if (!targetLanguage) {
-    throw new Error('Translation is not possible, because no target language selected!');
+    throw new Error('Translation is not possible, because no target language was selected!');
   }
 
   let sourceLanguage = state.sourceLanguage ?? getDefaultSourceLanguage();
@@ -47,7 +47,7 @@ async function getTargetAndSourceLanguage (request: GetTargetAndSourceLanguageRe
   return { targetLanguage, sourceLanguage };
 }
 
-function displayTranslationNotification(execute: (progess: vscode.Progress<{ increment: number }>) => Promise<void> | void) {
+function displayTranslationNotification(execute: (progress: vscode.Progress<{ increment: number }>) => Promise<void> | void) {
   return vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'Translating' }, async (progress) => {
     await execute(progress);
     showMessageWithTimeout(`Translation completed!`, 3000);
@@ -57,14 +57,14 @@ function displayTranslationNotification(execute: (progess: vscode.Progress<{ inc
 function translateSelections(selections: vscode.Selection[], request: { targetLanguage: TargetLanguageCode, sourceLanguage: SourceLanguageCode | undefined }): Thenable<void> {
   const { targetLanguage, sourceLanguage } = request; 
 
-  return displayTranslationNotification(async (progess) => {
+  return displayTranslationNotification(async (progress) => {
     const increment = 100 / 2 / selections.length;
 
     const texts = selections.map(selection => vscode.window.activeTextEditor?.document.getText(selection));
     const translations = await Promise.all(
       texts.map(async text => {
         if (!text) {
-          progess.report({ increment });
+          progress.report({ increment });
           return null;
         }
 
@@ -74,7 +74,7 @@ function translateSelections(selections: vscode.Selection[], request: { targetLa
             : `Start translating '${text}' from '${sourceLanguage}' to '${targetLanguage}'`
         );
         const result = await deepl.translate(text, sourceLanguage, targetLanguage);
-        progess.report({ increment });
+        progress.report({ increment });
         debug.write(
           result
             ? `Successfully translated '${text}' to '${result.text}'! (Source: '${result.detectedSourceLang}', Target: '${targetLanguage}')`
@@ -107,10 +107,10 @@ function translateSelections(selections: vscode.Selection[], request: { targetLa
               replacement = translation.text;
           }
 
-          editor.replace(selection, replacement);
+          editor.replace(selection, replacement ?? translation.text);
         }
 
-        progess.report({ increment });
+        progress.report({ increment });
       }
     });
   });
@@ -154,15 +154,15 @@ export const translateAndPasteFromClipboard = async () => {
     forceTargetLanguagePrompt: false
   });
 
-  return displayTranslationNotification(async (progess) => {
+  return displayTranslationNotification(async (progress) => {
     const increment = 100 / 2 / selections.length;
     const translatedClipboardText = await deepl.translate(clipboardText, sourceLanguage, targetLanguage);
-    progess.report({ increment: increment * selections.length });
+    progress.report({ increment: increment * selections.length });
 
     vscode.window.activeTextEditor?.edit((editor: vscode.TextEditorEdit) => {
       for (const selection of selections) {
         editor.replace(selection, translatedClipboardText.text);
-        progess.report({ increment });
+        progress.report({ increment });
       }
     }); 
   });
