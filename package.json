@@ -204,11 +204,13 @@
 			},
 			{
 				"command": "deepl.configure",
-				"title": "DeepL: Configure extension"
+				"title": "DeepL: Configure extension",
+				"shortTitle": "Configure extension"
 			},
 			{
 				"command": "deepl.translateAndPasteFromClipboard",
-				"title": "DeepL: Translate and paste from clipboard"
+				"title": "DeepL: Translate and paste from clipboard",
+				"shortTitle": "Translate and paste from clipboard"
 			}
 		],
 		"menus": {
