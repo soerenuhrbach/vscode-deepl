@@ -16,7 +16,10 @@ export interface ExtensionState {
 }
 
 export enum TranslationMode {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   Replace = "Replace",
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   InsertLineBelow = "InsertLineBelow",
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   InsertLineAbove = "InsertLineAbove"
 }
