@@ -16,7 +16,7 @@ The following commands are available to translate texts:
 |---|---|---
 |DeepL: Translate|alt+t|Translates the selected text into the last used target language 
 |DeepL: Translate to ...|alt+shift+t|Asks for the target language and translates the selected text into the target language
-|DeepL: Translate from ... to ...|alt+ctrl+shift+t|Asks for source and target language and translates the selected text from the source language into the target language
+|DeepL: Translate to ... from ...|alt+ctrl+shift+t|Asks for source and target language and translates the selected text from the source language into the target language
 |DeepL: Translate and paste from clipboard|ctrl+shift+v|Translates the clipboard content and paste it
 |DeepL: Duplicate and translate|ctrl+shift+d|Duplicates and translates the selected text
 
@@ -74,7 +74,7 @@ Dont use this extension if you dont agree with their privacy policy!
 
 ### 1.1.0
 
-- Removed the command "Translate from ... to ... below original text"
+- Removed the command "Translate to ... from ... below original text"
 - Added new configuration `deepl.configuration` to specify whether the selected text should be replaced with the translation result or inserted into a new line below/above
 - Added the command "Deepl: Translate and paste from clipboard" which allows to translate the clipboard content and paste it.
 - Show warning message if translation result equals the original text with actions to resolve this conflict.

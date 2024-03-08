@@ -134,7 +134,7 @@ export const translateTo = createTranslateSelectionsCommand({
   forceTargetLanguagePrompt: true, 
   forceSourceLanguagePrompt: false 
 });
-export const translateFromTo = createTranslateSelectionsCommand({ 
+export const translateToFrom = createTranslateSelectionsCommand({ 
   forceTargetLanguagePrompt: true, 
   forceSourceLanguagePrompt: true
 });

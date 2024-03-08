@@ -198,9 +198,9 @@
 				"shortTitle": "Translate to ..."
 			},
 			{
-				"command": "deepl.translateFromTo",
-				"title": "DeepL: Translate from ... to ...",
-				"shortTitle": "Translate from ..."
+				"command": "deepl.translateToFrom",
+				"title": "DeepL: Translate to ... from ...",
+				"shortTitle": "Translate to ... from ..."
 			},
 			{
 				"command": "deepl.configure",
@@ -232,7 +232,7 @@
 				},
 				{
 					"when": "editorHasSelection && !isInDiffEditor",
-					"command": "deepl.translateFromTo",
+					"command": "deepl.translateToFrom",
 					"group": "deepl@3"
 				}
 			]
@@ -249,7 +249,7 @@
 				"key": "shift+alt+t"
 			},
 			{
-				"command": "deepl.translateFromTo",
+				"command": "deepl.translateToFrom",
 				"when": "editorHasSelection && !isInDiffEditor",
 				"key": "ctrl+shift+alt+t",
 				"mac": "cmd+shift+alt+t"
