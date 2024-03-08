@@ -216,9 +216,20 @@
 				"command": "deepl.duplicateAndTranslate",
 				"title": "DeepL: Duplicate and translate",
 				"shortTitle": "Duplicate and translate"
+			},
+			{
+				"command": "deepl.translateFiles",
+				"title": "DeepL: Translate files",
+				"shortTitle": "Translate files"
 			}
 		],
 		"menus": {
+			"explorer/context": [
+				{
+					"command": "deepl.translateFiles",
+					"group": "deepl@1"
+				}
+			],
 			"editor/context": [
 				{
 					"when": "editorHasSelection && !isInDiffEditor",

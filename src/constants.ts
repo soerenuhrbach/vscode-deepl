@@ -21,6 +21,7 @@ export const COMMAND_CONFIGURE = 'deepl.configure';
 export const COMMAND_TRANSLATE = 'deepl.translate';
 export const COMMAND_TRANSLATE_TO = 'deepl.translateTo';
 export const COMMAND_TRANSLATE_TO_FROM = 'deepl.translateToFrom';
+export const COMMAND_TRANSLATE_FILES = 'deepl.translateFiles';
 export const COMMAND_TRANSLATE_AND_PASTE_FROM_CLIPBOARD = 'deepl.translateAndPasteFromClipboard';
 export const COMMAND_DUPLICATE_AND_TRANSLATE = 'deepl.duplicateAndTranslate';
 export const COMMAND_SET_TARGET_LANGAUGE = 'deepl.setTargetLanguage';

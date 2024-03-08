@@ -93,7 +93,89 @@ const handleAuthorizationFailure = async (): Promise<{ apiKeyUpdated: boolean }>
   return { apiKeyUpdated };
 };
 
-export async function translate<T extends string | string[]>(texts: T, sourceLanguage: SourceLanguageCode | undefined, targetLanguage: TargetLanguageCode, retries: number = 1): Promise<T extends string ? TextResult : TextResult[]> {
+import { readFile } from 'fs/promises';
+import { createWriteStream } from 'fs';
+
+const isExtensionSupported = (fileName: string) => {
+  const supportedExtensions = [
+    'docx',
+    'doc',
+    'pptx',
+    'xslx',
+    'pdf',
+    'txt',
+    'html',
+    'xlf',
+    'xliff'
+  ];
+
+  return supportedExtensions.reduce(
+    (isSupported, extension) => isSupported || fileName.toLowerCase().endsWith(extension), 
+    false
+  );
+};
+
+// TODO: Display notification
+export async function translateFiles(
+  files: string[], 
+  sourceLanguage: SourceLanguageCode | undefined, 
+  targetLanguage: TargetLanguageCode, 
+  // retries: number = 1
+) {
+  try 
+  {
+    const translator = await createTranslator(state.apiKey!);
+
+    await Promise.all(
+      files.map(async file => {
+        const handle = await translator.uploadDocument(
+          await readFile(file),
+          sourceLanguage ?? null,
+          targetLanguage,
+          {
+            filename: isExtensionSupported(file)
+              ? file
+              : `${file}.txt`,
+            formality: state.formality || undefined,
+            glossary: state.glossaryId || undefined
+          }
+        );
+
+        // wait until document is translated
+        await new Promise<void>((resolve, reject) => {
+          const interval = setInterval(async () => {
+            const documentStatus = await translator.getDocumentStatus(handle);
+
+            if (!documentStatus.ok()) {
+              return reject(documentStatus.errorMessage);
+            }
+
+            if (!documentStatus.done()) {
+              return;
+            }
+
+            clearInterval(interval);
+
+            resolve();
+          }, 200);
+        });
+
+        await translator.downloadDocument(handle, createWriteStream(file));
+      })
+    );
+  }
+  catch (e) 
+  {
+    console.log(e);
+  }
+}
+
+export async function translate<T extends string | string[]>(
+  texts: T, 
+  sourceLanguage: SourceLanguageCode | undefined, 
+  targetLanguage: TargetLanguageCode, 
+  retries: number = 1
+): Promise<T extends string ? TextResult : TextResult[]> {
   if (!state.apiKey) {
     state.apiKey = await showApiKeyPrompt();
   }

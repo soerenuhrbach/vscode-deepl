@@ -139,6 +139,26 @@ export const translateToFrom = createTranslateSelectionsCommand({
   forceSourceLanguagePrompt: true
 });
 
+import fs from 'fs';
+
+export const translateFiles = async (_: never, selectedFiles: vscode.Uri[]) => {
+  console.log('translate files');
+  console.log(selectedFiles);
+
+  const { sourceLanguage, targetLanguage } = await getTargetAndSourceLanguage();
+
+  await deepl.translateFiles(
+    selectedFiles
+      .filter(x => x.scheme === 'file')
+      .filter(x => fs.lstatSync(x.fsPath).isFile())
+      .map(x => x.fsPath),
+    sourceLanguage,
+    targetLanguage
+  );
+
+  // vscode.window.active
+};
+
 export const duplicateAndTranslate = async () => {
   const editor = vscode.window.activeTextEditor;
   const selections = editor?.selections;
