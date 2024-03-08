@@ -123,7 +123,7 @@ function createTranslateSelectionsCommand(request: GetTargetAndSourceLanguageReq
   };
 }
 
-export const setTargetLangauge = async () => state.targetLanguage = await showTargetLanguagePrompt();
+export const setTargetLanguage = async () => state.targetLanguage = await showTargetLanguagePrompt();
 export const configureSettings = async () => state.apiKey = await showApiKeyPrompt();
 
 export const translate = createTranslateSelectionsCommand({ 
