@@ -68,6 +68,10 @@ Dont use this extension if you dont agree with their privacy policy!
 
 ## Release Notes
 
+### 1.1.2
+
+- Patched dependencies to resolve vulnerabilities.
+
 ### 1.1.1 
 
 - Added command "DeepL: Duplicate and translate" which duplicates and translates the selected text.
