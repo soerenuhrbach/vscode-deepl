@@ -42,7 +42,8 @@ const loadExtensionState = async (context: vscode.ExtensionContext) => {
   const config = vscode.workspace.getConfiguration();
 
   debug.write('Loading extension state...');
-  state.apiKey = await context.secrets.get(CONFIG_API_KEY);
+  const storedApiKey = await context.secrets.get(CONFIG_API_KEY);
+  state.apiKey = storedApiKey?.trim() || undefined;
 
   state.formality = config.get(CONFIG_FORMALITY) || undefined;
   state.glossaryId = config.get(CONFIG_GLOSSARY_ID) || undefined;
@@ -102,10 +103,11 @@ export async function setup(context: vscode.ExtensionContext) {
 
   effect(async () => {
     if (state.apiKey) {
-      await Promise.all([
-        deepl.getSourceLanguages(),
-        deepl.getTargetLanguages()
-      ]);
+      const sourceLanguages = await deepl.getSourceLanguages();
+      if (sourceLanguages.length === 0) {
+        return;
+      }
+      await deepl.getTargetLanguages();
     }
   });
 

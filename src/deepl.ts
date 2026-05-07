@@ -70,27 +70,45 @@ const handleTranslationFailure = async <T extends string | string[]>(texts: T, r
   return results;
 };
 
-const handleAuthorizationFailure = async (): Promise<{ apiKeyUpdated: boolean }> => {
-  let apiKeyUpdated = false;
+let pendingAuthPrompt: Promise<{ apiKeyUpdated: boolean }> | null = null;
 
-  const selectedAction = await vscode.window.showWarningMessage(
-    'Authentication failed!',
-    {
-      detail: 'Please check if you are api key correct.',
-      modal: true
-    },
-    ResolveAuthenticationError.CHANGE_API_KEY
-  );
-
-  if (selectedAction === ResolveAuthenticationError.CHANGE_API_KEY) {
-    const newApiKey = await showApiKeyPrompt();
-    if (newApiKey && newApiKey !== state.apiKey) {
-      apiKeyUpdated = true;
-      state.apiKey = newApiKey;
-    }
+const handleAuthorizationFailure = (error?: AuthorizationError): Promise<{ apiKeyUpdated: boolean }> => {
+  if (pendingAuthPrompt) {
+    return pendingAuthPrompt;
   }
 
-  return { apiKeyUpdated };
+  pendingAuthPrompt = (async () => {
+    let apiKeyUpdated = false;
+
+    const detail = error?.message
+      ? `${error.message}\n\nPlease check that your DeepL API key is correct.`
+      : 'Please check that your DeepL API key is correct.';
+
+    const selectedAction = await vscode.window.showWarningMessage(
+      'Authentication failed!',
+      {
+        detail,
+        modal: true
+      },
+      ResolveAuthenticationError.CHANGE_API_KEY
+    );
+
+    if (selectedAction === ResolveAuthenticationError.CHANGE_API_KEY) {
+      const newApiKey = await showApiKeyPrompt();
+      if (newApiKey && newApiKey !== state.apiKey) {
+        apiKeyUpdated = true;
+        cache.targetLanguages = [];
+        cache.sourceLanguages = [];
+        state.apiKey = newApiKey;
+      }
+    }
+
+    return { apiKeyUpdated };
+  })().finally(() => {
+    pendingAuthPrompt = null;
+  });
+
+  return pendingAuthPrompt;
 };
 
 export async function translate<T extends string | string[]>(texts: T, sourceLanguage: SourceLanguageCode | undefined, targetLanguage: TargetLanguageCode, retries: number = 1): Promise<T extends string ? TextResult : TextResult[]> {
@@ -130,7 +148,8 @@ export async function translate<T extends string | string[]>(texts: T, sourceLan
       : results;
   } catch (e: unknown) {
     if (e instanceof AuthorizationError && retries > 0) {
-      const { apiKeyUpdated } = await handleAuthorizationFailure();
+      debug.write(`Authorization error during translation: ${e.message}`);
+      const { apiKeyUpdated } = await handleAuthorizationFailure(e);
       if (apiKeyUpdated) {
         return translate(texts, sourceLanguage, targetLanguage, retries - 1);
       }
@@ -155,7 +174,8 @@ export async function getTargetLanguages(retries: number = 1) {
     cache.targetLanguages = await translator.getTargetLanguages();
   } catch (e: unknown) {
     if (e instanceof AuthorizationError && retries > 0) {
-      const { apiKeyUpdated } = await handleAuthorizationFailure();
+      debug.write(`Authorization error while loading target languages: ${e.message}`);
+      const { apiKeyUpdated } = await handleAuthorizationFailure(e);
       if (apiKeyUpdated) {
         return getTargetLanguages(retries - 1);
       }
@@ -180,7 +200,8 @@ export async function getSourceLanguages(retries: number = 1) {
     cache.sourceLanguages = await translator.getSourceLanguages();
   } catch (e) {
     if (e instanceof AuthorizationError && retries > 0) {
-      const { apiKeyUpdated } = await handleAuthorizationFailure();
+      debug.write(`Authorization error while loading source languages: ${e.message}`);
+      const { apiKeyUpdated } = await handleAuthorizationFailure(e);
       if (apiKeyUpdated) {
         return getSourceLanguages(retries - 1);
       }

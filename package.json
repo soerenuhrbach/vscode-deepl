@@ -293,7 +293,7 @@
 	},
 	"dependencies": {
 		"@vue/reactivity": "^3.4.10",
-		"deepl-node": "^1.11.0"
+		"deepl-node": "^1.27.0"
 	},
 	"lint-staged": {
 		"*.{ts,tsx}": [
