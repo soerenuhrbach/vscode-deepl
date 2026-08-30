@@ -49,18 +49,26 @@ async function getTargetAndSourceLanguage (request: GetTargetAndSourceLanguageRe
 
 function displayTranslationNotification(execute: (progress: vscode.Progress<{ increment: number }>) => Promise<void> | void) {
   return vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'Translating' }, async (progress) => {
-    await execute(progress);
-    showMessageWithTimeout(`Translation completed!`, 3000);
+    try {
+      await execute(progress);
+      showMessageWithTimeout(`Translation completed!`, 3000);
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : String(e);
+      debug.write(`Translation failed: ${message}`);
+      await vscode.window.showErrorMessage(`Translation failed: ${message}`);
+    }
   });
 }
 
-function translateSelections(selections: vscode.Selection[], request: { targetLanguage: TargetLanguageCode, sourceLanguage: SourceLanguageCode | undefined }): Thenable<void> {
-  const { targetLanguage, sourceLanguage } = request; 
+function translateSelections(editor: vscode.TextEditor, selections: vscode.Selection[], request: { targetLanguage: TargetLanguageCode, sourceLanguage: SourceLanguageCode | undefined }): Thenable<void> {
+  const { targetLanguage, sourceLanguage } = request;
 
   return displayTranslationNotification(async (progress) => {
     const increment = 100 / 2 / selections.length;
 
-    const texts = selections.map(selection => vscode.window.activeTextEditor?.document.getText(selection));
+    // `editor` is captured once by the caller before any awaits below, so a tab switch or editor
+    // close while the network request is in flight can't redirect the edit to a different document.
+    const texts = selections.map(selection => editor.document.getText(selection));
     const translations = await Promise.all(
       texts.map(async text => {
         if (!text) {
@@ -74,14 +82,14 @@ function translateSelections(selections: vscode.Selection[], request: { targetLa
       })
     );
 
-    await vscode.window.activeTextEditor?.edit((editor: vscode.TextEditorEdit) => {
+    await editor.edit((editBuilder: vscode.TextEditorEdit) => {
       for (const index in selections) {
         const selection = selections[index];
         const translation = translations[index];
 
         if (selection && translation) {
           let replacement = null;
-          const selectionText = vscode.window.activeTextEditor?.document.getText(selection);
+          const selectionText = editor.document.getText(selection);
 
           switch (state.translationMode) {
             case TranslationMode.InsertLineAbove:
@@ -91,13 +99,13 @@ function translateSelections(selections: vscode.Selection[], request: { targetLa
             case TranslationMode.InsertLineBelow:
               replacement = `${selectionText}\n${translation.text}`;
               break;
-            
+
             default:
             case TranslationMode.Replace:
               replacement = translation.text;
           }
 
-          editor.replace(selection, replacement ?? translation.text);
+          editBuilder.replace(selection, replacement ?? translation.text);
         }
 
         progress.report({ increment });
@@ -112,14 +120,13 @@ function createTranslateSelectionsCommand(request: GetTargetAndSourceLanguageReq
       await configureSettings();
     }
 
-    const selections = vscode.window.activeTextEditor
-      ?.selections
-      ?.filter(selection => !selection.isEmpty);
-    if (!selections || selections.length === 0) {
+    const editor = vscode.window.activeTextEditor;
+    const selections = editor?.selections?.filter(selection => !selection.isEmpty);
+    if (!editor || !selections || selections.length === 0) {
       return;
     }
 
-    await translateSelections(selections, await getTargetAndSourceLanguage(request));
+    await translateSelections(editor, selections, await getTargetAndSourceLanguage(request));
   };
 }
 
@@ -193,8 +200,11 @@ export const duplicateAndTranslate = async () => {
 };
 
 export const translateAndPasteFromClipboard = async () => {
-  const selections = vscode.window.activeTextEditor?.selections;
-  if (!selections || selections.length === 0) {
+  // Captured once up front, before any of the awaits below, so a tab switch while waiting for the
+  // clipboard read / language prompt / network translation can't paste into the wrong document.
+  const editor = vscode.window.activeTextEditor;
+  const selections = editor?.selections;
+  if (!editor || !selections || selections.length === 0) {
     return;
   }
 
@@ -208,17 +218,17 @@ export const translateAndPasteFromClipboard = async () => {
   return displayTranslationNotification(async (progress) => {
     const increment = 100 / 2 / selections.length;
     const translatedClipboardText = await deepl.translate(
-      clipboardText, 
-      sourceLanguage, 
+      clipboardText,
+      sourceLanguage,
       targetLanguage
     );
     progress.report({ increment: increment * selections.length });
 
-    vscode.window.activeTextEditor?.edit((editor: vscode.TextEditorEdit) => {
+    await editor.edit((editBuilder: vscode.TextEditorEdit) => {
       for (const selection of selections) {
-        editor.replace(selection, translatedClipboardText.text);
+        editBuilder.replace(selection, translatedClipboardText.text);
         progress.report({ increment });
       }
-    }); 
+    });
   });
 };

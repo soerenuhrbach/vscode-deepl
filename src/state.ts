@@ -38,7 +38,7 @@ export const state = reactive<ExtensionState>({
   translationMode: TranslationMode.Replace
 });
 
-const loadExtensionState = async (context: vscode.ExtensionContext) => {
+export const loadExtensionState = async (context: vscode.ExtensionContext) => {
   const config = vscode.workspace.getConfiguration();
 
   debug.write('Loading extension state...');
@@ -47,12 +47,18 @@ const loadExtensionState = async (context: vscode.ExtensionContext) => {
   state.formality = config.get(CONFIG_FORMALITY) || undefined;
   state.glossaryId = config.get(CONFIG_GLOSSARY_ID) || undefined;
   state.ignoreTags = config.get(CONFIG_IGNORE_TAGS) || undefined;
-  state.tagHandling = config.get(CONFIG_TAG_HANDLING) || undefined;
   state.splittingTags = config.get(CONFIG_SPLITTING_TAGS) || undefined;
   state.splitSentences = config.get(CONFIG_SPLIT_SENTENCES) || undefined;
   state.translationMode = config.get(CONFIG_TRANSLATION_MODE) || TranslationMode.Replace;
   state.nonSplittingTags = config.get(CONFIG_NON_SPLITTING_TAGS) || undefined;
-  state.preserveFormatting = config.get(CONFIG_PRESERVE_FORMATTING) || undefined;
+  // preserveFormatting defaults to `false` (not an empty string), so `|| undefined` would
+  // silently discard an explicit `false` - read the boolean as-is instead.
+  state.preserveFormatting = config.get<boolean>(CONFIG_PRESERVE_FORMATTING);
+
+  // tagHandling defaults to the sentinel "off", which is truthy and therefore survives
+  // `|| undefined` - normalize it to undefined explicitly since deepl-node only knows 'html'/'xml'.
+  const tagHandling = config.get<string>(CONFIG_TAG_HANDLING);
+  state.tagHandling = tagHandling === 'html' || tagHandling === 'xml' ? tagHandling : undefined;
 
   state.targetLanguage = context.workspaceState.get<TargetLanguageCode>(WORKSPACE_TARGET_LANGUAGE) || getDefaultTargetLanguage(config);
   state.sourceLanguage = context.workspaceState.get<SourceLanguageCode>(WORKSPACE_SOURCE_LANGUAGE) || getDefaultSourceLanguage(config);
@@ -61,29 +67,31 @@ const loadExtensionState = async (context: vscode.ExtensionContext) => {
   debug.write(JSON.stringify(state, null, 2));
 };
 
-const migrateApiKeyFromConfigToSecrets = async (config: vscode.WorkspaceConfiguration, context: vscode.ExtensionContext) => {
+export const migrateApiKeyFromConfigToSecrets = async (config: vscode.WorkspaceConfiguration, context: vscode.ExtensionContext) => {
   const apiKeyFromConfiguration = config.get<string>(CONFIG_API_KEY);
   if (!apiKeyFromConfiguration) {
     return;
   }
 
   await context.secrets.store(CONFIG_API_KEY, apiKeyFromConfiguration);
-  config.update(CONFIG_API_KEY, apiKeyFromConfiguration, vscode.ConfigurationTarget.Global);
+  // Clear the plaintext value instead of writing it back - otherwise the key stays in
+  // settings.json forever even though it has supposedly been "moved" to secret storage.
+  await config.update(CONFIG_API_KEY, undefined, vscode.ConfigurationTarget.Global);
   debug.write('Moved api key from configuration to secret store.');
 };
 
-const migrateWorkspaceStates = async (context: vscode.ExtensionContext) => {
+export const migrateWorkspaceStates = async (context: vscode.ExtensionContext) => {
   const sourceLanguageToMigrate = context.workspaceState.get<string>('deepl:sourceLanguage');
   if (sourceLanguageToMigrate) {
-    context.workspaceState.update(WORKSPACE_SOURCE_LANGUAGE, sourceLanguageToMigrate);
-    context.workspaceState.update('deepl:sourceLanguage', undefined);
+    await context.workspaceState.update(WORKSPACE_SOURCE_LANGUAGE, sourceLanguageToMigrate);
+    await context.workspaceState.update('deepl:sourceLanguage', undefined);
     debug.write('Moved source language to new workspace state key');
   }
 
   const targetLanguageToMigrate = context.workspaceState.get<string>('deepl:targetLanguage');
   if (targetLanguageToMigrate) {
-    context.workspaceState.update(WORKSPACE_TARGET_LANGUAGE, sourceLanguageToMigrate);
-    context.workspaceState.update('deepl:targetLanguage', undefined);
+    await context.workspaceState.update(WORKSPACE_TARGET_LANGUAGE, targetLanguageToMigrate);
+    await context.workspaceState.update('deepl:targetLanguage', undefined);
     debug.write('Moved target language to new workspace state key');
   }
 };
@@ -101,6 +109,10 @@ export async function setup(context: vscode.ExtensionContext) {
   await migrateApiKeyFromConfigToSecrets(config, context);
 
   effect(async () => {
+    // Re-runs whenever state.apiKey changes - invalidate the cached language lists so a
+    // previous account's languages aren't served after switching to a different api key.
+    deepl.invalidateLanguageCache();
+
     if (state.apiKey) {
       await Promise.all([
         deepl.getSourceLanguages(),

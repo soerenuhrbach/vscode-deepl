@@ -26,5 +26,5 @@ export function showApiKeyPrompt() {
     title: 'Please enter your DeepL API key',
     placeHolder: 'Please enter your DeepL API key',
     ignoreFocusOut: true
-  }).then(x => x ?? undefined);
+  }).then(x => x?.trim() || undefined);
 }
