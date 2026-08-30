@@ -22,6 +22,20 @@ const cache = {
   sourceLanguages: [] as readonly Language[],
 };
 
+// Bumped whenever the cache is invalidated, so an in-flight fetch started under a since-replaced
+// api key can detect it is stale and discard its result instead of overwriting fresher data.
+let cacheGeneration = 0;
+let targetLanguagesFetch: Promise<readonly Language[]> | undefined;
+let sourceLanguagesFetch: Promise<readonly Language[]> | undefined;
+
+export function invalidateLanguageCache() {
+  cache.targetLanguages = [];
+  cache.sourceLanguages = [];
+  cacheGeneration++;
+  targetLanguagesFetch = undefined;
+  sourceLanguagesFetch = undefined;
+}
+
 const createTranslator = (apiKey: string) => {
   const extension = vscode.extensions.getExtension(EXTENSION_IDENTIFIER)?.packageJSON;
   const appName = extension?.name;
@@ -50,11 +64,13 @@ const handleTranslationFailure = async <T extends string | string[]>(texts: T, r
     ResolveUnsuccessfulTranslationActions.SELECT_SOURCE_LANGUAGE,
     ResolveUnsuccessfulTranslationActions.CHANGE_TARGET_LANGUAGE);
 
+  // `retries` was already decremented once by the caller before invoking this handler - pass it
+  // through unchanged here, otherwise the budget is consumed twice for a single retry attempt.
   if (selectedAction === ResolveUnsuccessfulTranslationActions.SELECT_SOURCE_LANGUAGE) {
     const newSourceLanguage = await showSourceLanguagePrompt();
     if (newSourceLanguage) {
       debug.write(`Retrying translation with new source language '${newSourceLanguage}'`);
-      return await translate(texts, newSourceLanguage, targetLanguage, retries - 1);
+      return await translate(texts, newSourceLanguage, targetLanguage, retries);
     }
   }
 
@@ -63,7 +79,7 @@ const handleTranslationFailure = async <T extends string | string[]>(texts: T, r
     if (newTargetLanguage) {
       state.targetLanguage = newTargetLanguage;
       debug.write(`Retrying translation with changed target language '${newTargetLanguage}'`);
-      return await translate(texts, sourceLanguage, newTargetLanguage, retries - 1);
+      return await translate(texts, sourceLanguage, newTargetLanguage, retries);
     }
   }
 
@@ -87,22 +103,42 @@ const handleAuthorizationFailure = async (): Promise<{ apiKeyUpdated: boolean }>
     if (newApiKey && newApiKey !== state.apiKey) {
       apiKeyUpdated = true;
       state.apiKey = newApiKey;
+    } else if (newApiKey) {
+      debug.write('The re-entered api key is identical to the currently configured one - not retrying.');
     }
   }
 
   return { apiKeyUpdated };
 };
 
+const resolveFormality = async (targetLanguage: TargetLanguageCode) => {
+  if (!state.formality || state.formality === 'default') {
+    return undefined;
+  }
+
+  const targetLanguages = await getTargetLanguages();
+  const language = targetLanguages.find(candidate => candidate.code.toLowerCase() === targetLanguage.toLowerCase());
+  if (!language?.supportsFormality) {
+    debug.write(`Formality '${state.formality}' is not supported for target language '${targetLanguage}' - omitting it.`);
+    return undefined;
+  }
+
+  return state.formality;
+};
+
 export async function translate<T extends string | string[]>(texts: T, sourceLanguage: SourceLanguageCode | undefined, targetLanguage: TargetLanguageCode, retries: number = 1): Promise<T extends string ? TextResult : TextResult[]> {
   if (!state.apiKey) {
     state.apiKey = await showApiKeyPrompt();
   }
+  if (!state.apiKey) {
+    throw new Error('Translation is not possible, because no DeepL API key was configured!');
+  }
 
-  const translator = createTranslator(state.apiKey!);
+  const translator = createTranslator(state.apiKey);
   debug.write(
     sourceLanguage
-      ? `Start translating '${texts}' to '${targetLanguage}'`
-      : `Start translating '${texts}' from '${sourceLanguage}' to '${targetLanguage}'`
+      ? `Start translating '${texts}' from '${sourceLanguage}' to '${targetLanguage}'`
+      : `Start translating '${texts}' to '${targetLanguage}'`
   );
 
   try {
@@ -111,7 +147,7 @@ export async function translate<T extends string | string[]>(texts: T, sourceLan
       sourceLanguage ?? null,
       targetLanguage,
       {
-        formality: state.formality || undefined,
+        formality: await resolveFormality(targetLanguage),
         glossary: state.glossaryId || undefined,
         ignoreTags: state.ignoreTags || undefined,
         nonSplittingTags: state.nonSplittingTags || undefined,
@@ -140,7 +176,22 @@ export async function translate<T extends string | string[]>(texts: T, sourceLan
   }
 }
 
-export async function getTargetLanguages(retries: number = 1) {
+const fetchLanguages = async (kind: 'target' | 'source', retries: number): Promise<readonly Language[]> => {
+  try {
+    const translator = createTranslator(state.apiKey!);
+    return kind === 'target' ? await translator.getTargetLanguages() : await translator.getSourceLanguages();
+  } catch (e: unknown) {
+    if (e instanceof AuthorizationError && retries > 0) {
+      const { apiKeyUpdated } = await handleAuthorizationFailure();
+      if (apiKeyUpdated) {
+        return fetchLanguages(kind, retries - 1);
+      }
+    }
+    return [];
+  }
+};
+
+export async function getTargetLanguages(retries: number = 1): Promise<readonly Language[]> {
   if (!state.apiKey) {
     debug.write('Could not load target languages - api key is not configured!');
     return [];
@@ -150,22 +201,29 @@ export async function getTargetLanguages(retries: number = 1) {
     return cache.targetLanguages;
   }
 
-  try {
-    const translator = createTranslator(state.apiKey);
-    cache.targetLanguages = await translator.getTargetLanguages();
-  } catch (e: unknown) {
-    if (e instanceof AuthorizationError && retries > 0) {
-      const { apiKeyUpdated } = await handleAuthorizationFailure();
-      if (apiKeyUpdated) {
-        return getTargetLanguages(retries - 1);
+  if (!targetLanguagesFetch) {
+    const generation = cacheGeneration;
+    const fetchPromise: Promise<readonly Language[]> = fetchLanguages('target', retries).then(languages => {
+      // Discard the result if the cache was invalidated (e.g. the api key changed) while this
+      // request was in flight, so an out-of-order response can't overwrite fresher data.
+      if (generation === cacheGeneration) {
+        cache.targetLanguages = languages;
       }
-    }
+      // Only clear the tracking slot if it still points at this fetch - otherwise a newer fetch
+      // started by an invalidation that happened while this stale one was in flight would have
+      // its own tracking reference wiped out, causing a redundant duplicate request.
+      if (targetLanguagesFetch === fetchPromise) {
+        targetLanguagesFetch = undefined;
+      }
+      return languages;
+    });
+    targetLanguagesFetch = fetchPromise;
   }
 
-  return cache.targetLanguages;
+  return targetLanguagesFetch;
 }
 
-export async function getSourceLanguages(retries: number = 1) {
+export async function getSourceLanguages(retries: number = 1): Promise<readonly Language[]> {
   if (!state.apiKey) {
     debug.write('Could not load source languages - api key is not configured!');
     return [];
@@ -175,17 +233,19 @@ export async function getSourceLanguages(retries: number = 1) {
     return cache.sourceLanguages;
   }
 
-  try {
-    const translator = createTranslator(state.apiKey);
-    cache.sourceLanguages = await translator.getSourceLanguages();
-  } catch (e) {
-    if (e instanceof AuthorizationError && retries > 0) {
-      const { apiKeyUpdated } = await handleAuthorizationFailure();
-      if (apiKeyUpdated) {
-        return getSourceLanguages(retries - 1);
+  if (!sourceLanguagesFetch) {
+    const generation = cacheGeneration;
+    const fetchPromise: Promise<readonly Language[]> = fetchLanguages('source', retries).then(languages => {
+      if (generation === cacheGeneration) {
+        cache.sourceLanguages = languages;
       }
-    }
+      if (sourceLanguagesFetch === fetchPromise) {
+        sourceLanguagesFetch = undefined;
+      }
+      return languages;
+    });
+    sourceLanguagesFetch = fetchPromise;
   }
 
-  return cache.sourceLanguages;
+  return sourceLanguagesFetch;
 }
